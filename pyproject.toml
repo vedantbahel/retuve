@@ -1,0 +1,83 @@
+[tool.poetry]
+name = "retuve"
+version = "0.1.0"
+description = ""
+authors = ["Sharpz7 <adam.mcarthur62@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+radstract = { git = "https://github.com/radoss-org/Radstract.git" }
+fire = "^0.5.0"
+moviepy = "^1.0.3"
+plotly = "^5.18.0"
+kaleido = "0.2.1"
+opencv-contrib-python = "^4.8.1.78"
+open3d = "^0.17.0"
+addict = "^2.4.0"
+afterthought = "^0.5.0"
+jinja2 = "^3.1.3"
+aiohttp = "^3.9.5"
+vulture = "^2.11"
+pytest-cov = "^5.0.0"
+pytest-mock = "^3.14.0"
+pdoc = "^14.4.0"
+deptry = "^0.16.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[[tool.poetry.source]]
+name = "pytorch"
+url = "https://download.pytorch.org/whl/cu121"
+priority = "explicit"
+
+[[tool.poetry.source]]
+name = "PyPI"
+priority = "primary"
+
+[tool.poe.tasks]
+# Under BSD: https://www.creatis.insa-lyon.fr/software/public/Gdcm/License.html
+license = "licensecheck --ignore-packages=gdcm"
+testcap = "pytest -vv --cov=retuve --durations=5 --capture-errors ./tests/unit"
+test = "pytest -vv --cov=retuve --durations=5 ./tests/unit"
+test_intergration = "pytest -vv --cov=retuve --durations=5 ./tests/intergration"
+test_all = "pytest -vv --cov=retuve --durations=5 ./tests ./examples/_test.py"
+deadcode = "vulture retuve ./scripts/whitelist.py"
+copiedcode = [{ cmd = "sudo npm install -g jscpd" }, { cmd = "jscpd retuve" }]
+linecount = [
+    { cmd = "sudo apt install cloc" },
+    { cmd = "cloc ./retuve --exclude-dir=classes,keyphrases,defaults --not-match-f='classes.py'" },
+]
+cuda = "python -c 'import torch; print(torch.cuda.is_available())'"
+pdoc_create = "pdoc -d numpy -o web retuve --logo https://files.mcaq.me/52kj1.png"
+docs = [{ cmd = "poe pdoc_create" }]
+viewdocs = [{ cmd = "poe docs" }, { cmd = "npx http-server -o ./web/" }]
+examples = "pytest ./examples/_test.py"
+testgen = "poetry run python ./tests/_get_test_data.py"
+help_real.shell = """
+    echo
+    echo Retuve Script Help
+    echo ==================
+    echo
+    echo "poe license" - Check the license of the project
+    echo "poe test" - Run the unit tests
+    echo "poe test_intergration" - Run the intergration tests
+    echo "poe test_all" - Run all the tests
+    echo "poe deadcode" - Check for dead code
+    echo "poe copiedcode" - Check for copied code
+    echo "poe linecount" - Check the line count
+    echo "poe cuda" - Check if cuda is available
+    echo "poe pdoc_create" - Create the pdoc documentation
+    echo "poe docs" - Create the documentation
+    echo "poe viewdocs" - View the documentation
+    echo "poe examples" - Run the examples
+    echo "poe testgen" - Generate test data
+    echo "poe help" - Show this help
+    echo
+"""
+help = "poe -q help_real"
+
+[tool.pytest.ini_options]
+filterwarnings = ["ignore::DeprecationWarning"]

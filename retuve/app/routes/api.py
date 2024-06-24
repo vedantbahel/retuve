@@ -1,0 +1,183 @@
+"""
+API routes for the Retuve App.
+"""
+
+import json
+import os
+import shutil
+
+from fastapi import APIRouter, File, Request, UploadFile
+from fastapi.responses import JSONResponse
+
+from retuve.app.classes import FeedbackRequest, SystemFiles
+from retuve.keyphrases.config import Config
+from retuve.logs import ulogger
+from retuve.trak.data import extract_files
+
+router = APIRouter()
+
+
+@router.post("/api/store_feedback/{keyphrase}")
+async def store_feedback(feedback_request: FeedbackRequest, keyphrase: str):
+    """
+    Store feedback on a result.
+
+    :param feedback_request: The feedback request.
+    :param keyphrase: The keyphrase to get right config.
+
+    :return: The status of the feedback storage.
+    """
+
+    config = Config.get_config(keyphrase)
+    file_id = feedback_request.file_id
+    feedback = feedback_request.feedback
+
+    feedback_dir = f"{config.api.savedir}/{file_id}"
+    feedback_file = f"{feedback_dir}/feedback.json"
+    os.makedirs(feedback_dir, exist_ok=True)
+    try:
+        if os.path.exists(feedback_file):
+            with open(feedback_file, "r") as file:
+                feedback_list = json.load(file)
+        else:
+            feedback_list = []
+        feedback_list.append({"comment": feedback})
+        with open(feedback_file, "w") as file:
+            json.dump(feedback_list, file)
+        return {
+            "status": "success",
+            "message": "Feedback stored successfully.",
+        }
+    except Exception as e:
+        ulogger.info(e)
+        return {"status": "error", "message": str(e)}
+
+
+@router.get("/api/get_feedback/{keyphrase}")
+async def get_feedback(file_id: str, keyphrase: str):
+    """
+    Get feedback on a result.
+
+    :param file_id: The file id.
+    :param keyphrase: The keyphrase to get right config.
+
+    :return: The feedback on the result.
+    """
+
+    config = Config.get_config(keyphrase)
+    feedback_file = f"{config.api.savedir}/{file_id}/feedback.json"
+    if os.path.exists(feedback_file):
+        with open(feedback_file, "r") as file:
+            feedback_list = json.load(file)
+        return {"status": "success", "feedback": feedback_list}
+    return {"status": "error", "message": "Feedback not found."}
+
+
+@router.get("/api/get_metrics/{keyphrase}")
+async def get_metrics(file_id: str, keyphrase: str):
+    """
+    Get metrics on a result.
+
+    :param file_id: The file id.
+    :param keyphrase: The keyphrase to get right config.
+    """
+
+    config = Config.get_config(keyphrase)
+    metrics_file = f"{config.api.savedir}/{file_id}/metrics.json"
+    if os.path.exists(metrics_file):
+        with open(metrics_file, "r") as file:
+            metrics_list = json.load(file)
+            metrics_list["status"] = "success"
+        return metrics_list
+    return {"status": "error", "message": "metrics not found."}
+
+
+@router.post("/api/upload/{keyphrase}")
+async def handle_upload(keyphrase: str, file: UploadFile = File(...)):
+    """
+    Handle file uploads.
+
+    :param keyphrase: The keyphrase to get right config.
+    :param file: The file to upload.
+    """
+
+    config = Config.get_config(keyphrase)
+
+    os.makedirs(config.api.upload_dir, exist_ok=True)
+    file_location = f"{config.api.upload_dir}/{file.filename}"
+    with open(file_location, "wb+") as file_object:
+        shutil.copyfileobj(file.file, file_object)
+
+    # check if the file is a zip, and extract it
+    if file.filename.endswith(".zip"):
+        # create a temp folder in the upload dir
+        temp_dir = f"{config.api.upload_dir}/temp"
+
+        shutil.unpack_archive(file_location, temp_dir)
+
+        zip_name = file.filename.split(".")[0]
+
+        # add the zips name to each extracted file
+        for root, dirs, files in os.walk(temp_dir):
+            for _file in files:
+                os.rename(
+                    os.path.join(root, _file),
+                    os.path.join(root, f"{zip_name}_{_file}"),
+                )
+
+        # move the extracted files to the upload dir
+        for root, dirs, files in os.walk(temp_dir):
+            for _file in files:
+                shutil.move(
+                    os.path.join(root, _file),
+                    os.path.join(config.api.upload_dir, _file),
+                )
+
+        # delete the temp folder
+        shutil.rmtree(temp_dir)
+
+        # delete the zip file
+        os.remove(file_location)
+        return {
+            "info": f"file '{file.filename}' extracted at '{config.api.upload_dir}'"
+        }
+
+    return {"info": f"file '{file.filename}' saved at '{file_location}'"}
+
+
+@router.post(
+    "/api/states/{keyphrase}",
+    response_model=SystemFiles,
+    responses={400: {"description": "Error"}},
+)
+@router.get(
+    "/api/states/{keyphrase}",
+    response_model=SystemFiles,
+    responses={400: {"description": "Error"}},
+)
+async def get_states(keyphrase: str):
+    """
+    Get the states from the database.
+
+    :param keyphrase: The keyphrase to get right config.
+
+    :return: The states from the database.
+    """
+
+    config = Config.get_config(keyphrase)
+    states = extract_files(config.api.db_path)
+    output_states = SystemFiles(states=states, length=len(states))
+
+    return output_states
+
+
+@router.get("/api/keyphrases")
+async def keyphrases(request: Request):
+    """
+    Get all valid keyphrases.
+
+    :return: The valid keyphrases.
+    """
+
+    keyphrases = [keyphrase for keyphrase, _ in Config.get_configs()]
+    return JSONResponse(content={"keyphrases": keyphrases})

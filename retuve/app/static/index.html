@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Available Keyphrases - Retuve</title>
+    <link rel="stylesheet" href="/static/main.css">
+</head>
+
+<body class="index-body">
+    <header>Retuve</header>
+    <div class="index-container">
+        <h1>Available Keyphrases</h1>
+        <ul>
+            {% for keyphrase in keyphrases %}
+            <li><a href="/ui/{{ keyphrase }}">{{ keyphrase }}</a></li>
+            {% endfor %}
+        </ul>
+        <a class="upload-link" href="/ui/upload/">Upload a new File</a>
+    </div>
+    <footer>&copy; 2024 Adam McArthur</footer>
+</body>
+
+</html>

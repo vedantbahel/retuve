@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload a Zip File - Retuve</title>
+    <link rel="stylesheet" href="/static/main.css">
+</head>
+
+<body class="index-body">
+    <header>Retuve</header>
+    <div class="index-container">
+        <h1>Upload a Zip File</h1>
+        <form action="/api/upload/" enctype="multipart/form-data" method="post">
+            <input type="file" name="file" accept=".zip,.jpg,.png">
+            <select name="keyphrase">
+                {% for keyphrase in keyphrases %}
+                <option value="{{ keyphrase }}">{{ keyphrase }}</option>
+                {% endfor %}
+            </select>
+            <input type="submit">
+        </form>
+        <div id="upload-result"></div>
+        <a href="/" class="back-button upload-back-button">Back</a>
+    </div>
+    <footer>&copy; 2024 Adam McArthur</footer>
+    <script>
+        document.querySelector('form').addEventListener('submit', function (event) {
+            event.preventDefault();
+            var keyphrase = document.querySelector('select[name="keyphrase"]').value;
+            var formData = new FormData(this);
+
+            fetch('/api/upload/' + encodeURIComponent(keyphrase), {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    var resultDiv = document.getElementById('upload-result');
+                    resultDiv.innerHTML = `<p>Upload successful!</p>`;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        });
+    </script>
+</body>
+
+</html>

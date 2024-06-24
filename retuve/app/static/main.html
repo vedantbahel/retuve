@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Viewer - Retuve</title>
+    <link rel="stylesheet" href="/static/main.css">
+</head>
+
+<body>
+    <header>Retuve</header>
+    <div class="container">
+        <div class="file-list">
+            <div class="file-list-buttons">
+                <a href="{{ url }}">Back</a>
+                <button id="download-files-btn" onclick="downloadSearchedFiles()">Download Searched Files</button>
+            </div>
+
+            <input type="text" class="search-bar" id="file-search" placeholder="Search files..."
+                oninput="filterFiles()">
+
+            <div class="file-list-dynamic">
+                {% for file in files %}
+                <button type="button" class="{{ file.state | lower }}"
+                    onclick="displayContent('{{ file.img_url }}', '{{ file.video_url }}', '{{ file.figure_url }}', '{{ file.file_id }}')">
+                    {{ file.file_id }}
+                </button>
+                {% endfor %}
+            </div>
+
+        </div>
+
+        <div class="content-viewer">
+            <h1 id="current-file"></h1>
+
+            <div class="content-data">
+                <div class="show-content">
+                    <video id="video-player" controls style="display: none;"></video>
+                    <iframe id="i-frame" src="" style="display: none;"></iframe>
+                    <img id="img-view" style="display: none;"></img>
+
+                    <div id="feedback-container" style="display: none;">
+                        <div id="feedback-messages"></div>
+                        <input type="text" id="feedback-input" placeholder="Enter feedback" />
+                        <button onclick="submitFeedback()">Submit Feedback</button>
+                    </div>
+
+                    <div id="metrics-container" style="display: none;">
+                        <table id="metrics-table">
+                            <!-- Table will be populated dynamically -->
+                        </table>
+                    </div>
+                </div>
+
+
+                <div class="show-buttons">
+                    {% if 'xray' == hip_mode %}
+                    <button id="show-img" class="viewer-button" onclick="toggleViewer('img')">Show img</button>
+                    <button id="show-feedback" class="viewer-button" onclick="toggleViewer('feedback')">Show
+                        Feedback</button>
+                    <button id="show-metrics" class="viewer-button" onclick="toggleViewer('metrics')">Show
+                        Metrics</button>
+                    {% elif 'us2dsw' == hip_mode %}
+                    <button id="show-video" class="viewer-button" onclick="toggleViewer('video')">Show Video</button>
+                    <button id="show-img" class="viewer-button" onclick="toggleViewer('img')">Show img</button>
+                    <button id="show-feedback" class="viewer-button" onclick="toggleViewer('feedback')">Show
+                        Feedback</button>
+                    <button id="show-metrics" class="viewer-button" onclick="toggleViewer('metrics')">Show
+                        Metrics</button>
+                    {% elif 'us3d' == hip_mode %}
+                    <button id="show-video" class="viewer-button" onclick="toggleViewer('video')">Show Video</button>
+                    <button id="show-figure" class="viewer-button" onclick="toggleViewer('figure')">Show Figure</button>
+                    <button id="show-feedback" class="viewer-button" onclick="toggleViewer('feedback')">Show
+                        Feedback</button>
+                    <button id="show-metrics" class="viewer-button" onclick="toggleViewer('metrics')">Show
+                        Metrics</button>
+                    {% elif 'us2d' == hip_mode %}
+                    <button id="show-img" class="viewer-button" onclick="toggleViewer('img')">Show img</button>
+                    <button id="show-feedback" class="viewer-button" onclick="toggleViewer('feedback')">Show
+                        Feedback</button>
+                    <button id="show-metrics" class="viewer-button" onclick="toggleViewer('metrics')">Show
+                        Metrics</button>
+                    {% endif %}
+                </div>
+            </div>
+
+
+
+
+        </div>
+    </div>
+
+    <footer>&copy; 2024 Adam McArthur</footer>
+
+
+    <script>
+        var hipMode = '{{ hip_mode }}';
+        var keyphrase = '{{ keyphrase }}';
+        var url = '{{ url }}';
+
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+        }
+
+        function displayContent(imgURL, videoUrl, iframeUrl, fileId) {
+            const imgView = document.getElementById('img-view');
+            const videoPlayer = document.getElementById('video-player');
+            const iframe = document.getElementById('i-frame');
+            loadFeedback(fileId)
+
+            // store imgURL, videoUrl, iframeUrl and fileId in cookies
+            document.cookie = `imgURL=${imgURL}`;
+            document.cookie = `videoUrl=${videoUrl}`;
+            document.cookie = `iframeUrl=${iframeUrl}`;
+            document.cookie = `fileId=${fileId}`;
+
+            // Load img
+            imgView.src = imgURL;
+
+            // Load video
+            videoPlayer.src = videoUrl;
+            videoPlayer.load(); // Ensure the video reloads
+
+            // Prepare iframe for loading with visibility hidden but still displayed
+            iframe.style.visibility = 'hidden';
+            iframe.style.display = 'block'; // Let it load in the background
+            iframe.src = iframeUrl;
+
+            currentFileId = fileId; // Update the current file ID
+
+            // Set a brief timeout to allow the iframe to initialize properly
+            setTimeout(() => {
+                if (iframe.src !== "about:blank") { // Check if the iframe has a source to prevent hiding it too soon
+                    // Only hide the iframe if another content type is meant to be shown first
+                    iframe.style.display = 'none';
+                    iframe.style.visibility = 'visible'; // Reset visibility for when it's toggled back
+                }
+            }, 1000); // Adjust timing based on expected load times
+
+            document.getElementById('current-file').textContent = `Viewing: ${fileId}`; // Update the current file name
+
+            // Toggle viewer to show metrics by default
+            toggleViewer('metrics');
+        }
+
+        function toggleViewer(type) {
+            const imgView = document.getElementById('img-view');
+            const videoPlayer = document.getElementById('video-player');
+            const iframe = document.getElementById('i-frame');
+            const feedbackContainer = document.getElementById('feedback-container');
+            const metricsContainer = document.getElementById('metrics-container');
+
+            imgView.style.display = 'none';
+            videoPlayer.style.display = 'none';
+            iframe.style.display = 'none';
+            feedbackContainer.style.display = 'none';
+            metricsContainer.style.display = 'none';
+
+            if (type === 'img') {
+                imgView.style.display = 'inline';
+            } else if (type === 'video') {
+                videoPlayer.style.display = 'inline';
+            } else if (type === 'figure') {
+                iframe.style.display = 'block';
+            } else if (type === 'feedback') {
+                feedbackContainer.style.display = 'block';
+                loadFeedback(currentFileId);
+            } else if (type === 'metrics') {
+                metricsContainer.style.display = 'block';
+                loadMetrics(currentFileId);
+            }
+        }
+
+        function fetchFiles() {
+            state_url = url + '/api/states/' + keyphrase;
+            fetch(state_url)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.states && Array.isArray(data.states)) {
+                        updateFileList(data.states, true);
+                    } else {
+                        console.error('States data is not in expected format:', data);
+                    }
+                })
+                .catch(error => console.error('Error fetching files:', error));
+        }
+
+        let currentFiles = [];
+
+        function updateFileList(files, update) {
+            const fileListElement = document.querySelector('.file-list-dynamic');
+            fileListElement.querySelectorAll('button').forEach(button => button.remove());
+
+            files.forEach(file => {
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = file.state.toLowerCase();
+                button.textContent = file.file_id;
+                button.onclick = () => displayContent(file.img_url, file.video_url, file.figure_url, file.file_id);
+                fileListElement.appendChild(button);
+            });
+
+            if (update) {
+                currentFiles = files;
+                filterFiles();
+            }
+        }
+
+        var currentFileId = null;
+
+        function filterFiles() {
+            const searchInput = document.getElementById('file-search').value;
+            if (searchInput === '') {
+                updateFileList(currentFiles);
+                return;
+            }
+
+            const searchQuery = new RegExp(searchInput, 'i');
+
+            const filteredFiles = currentFiles.filter(file => searchQuery.test(file.file_id));
+            updateFileList(filteredFiles);
+        }
+
+        function loadFeedback(fileId) {
+            if (fileId === null) {
+                console.error('No file selected');
+                return;
+            }
+
+            currentFileId = fileId;
+
+            const feedbackContainer = document.getElementById('feedback-messages');
+            feedbackContainer.innerHTML = '';
+
+            feedback_url = `${url}/api/get_feedback/${keyphrase}?file_id=${fileId}`;
+
+            fetch(feedback_url)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === "success") {
+                        data.feedback.forEach(fb => {
+                            const commentElement = document.createElement('p');
+                            commentElement.textContent = fb.comment;
+                            feedbackContainer.appendChild(commentElement);
+                        });
+                    } else {
+                        console.warn('Error loading feedback:', data.message);
+                    }
+                })
+                .catch(error => console.error('Fetch error:', error));
+        }
+
+        function submitFeedback() {
+            const feedbackText = document.getElementById('feedback-input').value;
+            if (!feedbackText.trim()) {
+                alert("Feedback cannot be empty.");
+                return;
+            }
+            const feedbackData = {
+                file_id: currentFileId,
+                feedback: feedbackText
+            };
+
+            feedback_url = `${url}/api/store_feedback/${keyphrase}`;
+
+            fetch(feedback_url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(feedbackData),
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === "success") {
+                        document.getElementById('feedback-input').value = '';
+                        loadFeedback(currentFileId);
+                    } else {
+                        console.error('Error submitting feedback:', data.message);
+                    }
+                })
+                .catch(error => console.error('Error submitting feedback:', error));
+        }
+
+        function loadMetrics(fileId) {
+            if (!fileId) {
+                console.error('No file selected for metrics');
+                return;
+            }
+
+            metric_url = `${url}/api/get_metrics/${keyphrase}?file_id=${fileId}`;
+
+            fetch(metric_url)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === "success" && data.metrics) {
+                        updateMetricsTable(data.metrics);
+                    } else {
+                        // log all of data
+                        console.log(data);
+                        console.error('Error loading metrics:', data.message);
+                    }
+                })
+                .catch(error => console.error('Fetch error:', error));
+        }
+
+        function updateMetricsTable(metrics) {
+            if (hipMode === 'us3d') {
+                updateMetricsTable3D(metrics);
+            } else {
+                updateMetricsTableGeneral(metrics);
+            }
+        }
+
+        function updateMetricsTable3D(metrics) {
+            const table = document.getElementById('metrics-table');
+            table.innerHTML = ''; // Clear existing table rows
+
+            // Create and append table header
+            const thead = table.createTHead();
+            const headerRow = thead.insertRow();
+            const th = document.createElement('th'); // Blank header for metric names
+            headerRow.appendChild(th);
+
+            headerNames = [
+                "Post", "Graf", "Ant", "Full"
+            ];
+
+            // Assuming metrics to be consistent, use the first metric array to determine column headers
+            metrics[0][Object.keys(metrics[0])[0]].forEach((_, idx) => {
+                const th = document.createElement('th');
+                th.textContent = `${headerNames[idx]}`;
+                headerRow.appendChild(th);
+            });
+
+            // Populate table rows with metrics data
+            metrics.forEach(metric => {
+                const row = table.insertRow();
+                const metricName = Object.keys(metric)[0];
+                const cell = row.insertCell();
+                cell.textContent = metricName;
+
+                metric[metricName].forEach(value => {
+                    const cell = row.insertCell();
+                    cell.textContent = value;
+                });
+            });
+        }
+
+        function updateMetricsTableGeneral(metrics) {
+            const table = document.getElementById('metrics-table');
+            table.innerHTML = ''; // Clear existing table rows
+
+            // Populate table rows with metrics data
+            metrics.forEach(metric => {
+                // Extract each key-value pair from the metric object
+                for (const [key, value] of Object.entries(metric)) {
+                    const row = table.insertRow();
+                    const keyCell = row.insertCell(0);
+                    const valueCell = row.insertCell(1);
+
+                    keyCell.textContent = key;
+                    valueCell.textContent = value;
+                }
+            });
+        }
+
+        function downloadSearchedFiles() {
+            const searchPattern = document.getElementById('file-search').value;
+            if (!searchPattern.trim()) {
+                alert("Please enter a search query before downloading.");
+                return;
+            }
+            window.location.href = `/ui/download/${keyphrase}?pattern=${encodeURIComponent(searchPattern)}`;
+        }
+
+        fetchFiles();
+        setInterval(fetchFiles, 5000);
+
+        const imgURL = getCookie('imgURL');
+        const videoUrl = getCookie('videoUrl');
+        const iframeUrl = getCookie('iframeUrl');
+        const fileId = getCookie('fileId');
+        if (imgURL && videoUrl && iframeUrl && fileId) {
+            displayContent(imgURL, videoUrl, iframeUrl, fileId);
+        }
+    </script>
+
+</body>
+
+</html>

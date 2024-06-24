@@ -1,0 +1,160 @@
+"""
+All the Configuration-based Enums
+"""
+
+import os
+
+from PIL import ImageColor
+
+# get this files dir
+FILE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+
+class Colors:
+    """
+    Class for managing common colors.
+    """
+
+    WHITE = (255, 255, 255)
+    RED = (255, 0, 0)
+    GREEN = (0, 255, 0)
+    BLUE = (17, 60, 130)
+    BLACK = (0, 0, 0)
+    GREY = (128, 128, 128)
+    DARK_RED = (139, 0, 0)
+    LIGHT_BLUE = (113, 194, 245)
+    GOLD = ImageColor.getcolor("#78620A", "RGB")
+
+    def __init__(self, rgb=None):
+        self.rgb = rgb
+
+    def rgba(self, alpha=1):
+        """
+        Get the color with alpha.
+
+        :param alpha: The alpha value
+        """
+        return (*self.rgb, int(alpha * 255))
+
+    def __repr__(self) -> str:
+        return f"Color({self.rgb})"
+
+
+class ACASplit:
+    """
+    Options for ACA split.
+
+    :attr THIRDS: Split into thirds equally
+    :attr GRAFS: Split using the grafs plane as the divider
+
+    :attr OPTIONS: List of acceptable options
+    """
+
+    THIRDS = "thirds"
+    GRAFS = "grafs"
+
+    OPTIONS = [THIRDS, GRAFS]
+
+
+class CRFem:
+    """
+    Options for Femoral Head Center position.
+
+    :attr GRAFS: Use the GRAFS method
+    :attr CENTER: Use the CENTER method
+
+    :attr OPTIONS: List of acceptable options
+    """
+
+    GRAFS = "grafs"
+    CENTER = "center"
+
+    OPTIONS = [GRAFS, CENTER]
+
+
+class MidLineMove:
+    """
+    Options for midline move method.
+
+    :attr BASIC: Use the most basic method.
+    """
+
+    BASIC = "basic"
+
+
+class Curvature:
+    """
+    Options for curvature method.
+
+    :attr Radist: Use the radist method.
+    """
+
+    RADIST = "radist"
+
+
+class MetricUS:
+    """
+    The Ultrasound Metric types.
+
+    :attr ALPHA: The alpha angle
+    :attr COVERAGE: The coverage
+    :attr CURVATURE: The curvature
+    :attr CENTERING_RATIO: The centering ratio
+    :attr ACA: The Acetabular Coverage Angle
+    """
+
+    ALPHA = "alpha"
+    COVERAGE = "coverage"
+    CURVATURE = "curvature"
+    CENTERING_RATIO = "cen. ratio"
+    ACA = "aca"
+
+    @classmethod
+    def ALL(cls):
+        return [
+            cls.ALPHA,
+            cls.COVERAGE,
+            cls.CURVATURE,
+            cls.CENTERING_RATIO,
+            cls.ACA,
+        ]
+
+
+class OperationType:
+    """
+    Operation type of the AI Model being used.
+
+    :attr SEG: The model is a segmentation model
+    :attr LANDMARK: The model is a landmark model
+    """
+
+    SEG = "seg"
+    LANDMARK = "landmark"
+
+
+class HipMode:
+    """
+    Hip US modes.
+
+    :attr US3D: 3D Ultrasound
+    :attr US2D: 2D Ultrasound
+    :attr US2DSW: 2D Sweep Ultrasound
+    :attr XRAY: X-Ray
+    """
+
+    US3D = "us3d"
+    US2D = "us2d"
+    US2DSW = "us2dsw"
+    XRAY = "xray"
+
+
+class Outputs:
+    """
+    Output Extensions.
+
+    """
+
+    IMAGE = "img.jpg"
+    METRICS = "metrics.json"
+    VIDEO_CLIP = "video.mp4"
+    VISUAL3D = "visual_3d.html"

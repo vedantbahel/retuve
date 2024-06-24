@@ -1,0 +1,86 @@
+"""
+A function for getting all the other metrics that are just for development purposes.
+"""
+
+from typing import List
+
+from retuve.classes.seg import SegFrameObjects
+from retuve.hip_us.classes.dev import DevMetricsUS
+from retuve.hip_us.classes.enums import HipLabelsUS
+from retuve.hip_us.classes.general import HipDatasUS
+from retuve.keyphrases.config import Config
+
+
+def get_dev_metrics(
+    hip_datas: HipDatasUS,
+    results: List[SegFrameObjects],
+    config: Config,
+) -> HipDatasUS:
+    """
+    Get all the development metrics.
+
+    :param hip_datas: HipDatasUS: The HipDatasUS object.
+    :param results: List[SegFrameObjects]: The results of the segmentation.
+    :param config: Config: The Config object.
+
+    :return: HipDatasUS: The updated HipDatasUS object with the development metrics.
+    """
+    dev_metrics = DevMetricsUS()
+
+    dev_metrics.graf_frame = hip_datas.graf_frame
+
+    ace_marked_hips = []
+    fem_marked_hips = []
+
+    for hip_data, seg_frame_objs in zip(hip_datas, results):
+        detected = [seg_obj.cls for seg_obj in seg_frame_objs]
+        detected_bool = any(detected)
+
+        if detected_bool:
+            dev_metrics.no_frames_segmented += 1
+
+        if hip_data.marked():
+            dev_metrics.no_frames_marked += 1
+
+        if HipLabelsUS.OsIchium in detected:
+            dev_metrics.os_ichium_detected = True
+
+        if HipLabelsUS.IlliumAndAcetabulum in detected:
+            ace_marked_hips.append(hip_data)
+
+        if HipLabelsUS.FemoralHead in detected:
+            fem_marked_hips.append(hip_data)
+
+    if len(ace_marked_hips) > 0:
+        dev_metrics.acetabular_mid_frame = ace_marked_hips[
+            len(ace_marked_hips) // 2
+        ].frame_no
+
+    if len(fem_marked_hips) > 0:
+        dev_metrics.fem_mid_frame = fem_marked_hips[
+            len(fem_marked_hips) // 2
+        ].frame_no
+
+    dev_metrics.critial_error = hip_datas.recorded_error.critical
+
+    dev_metrics.cr_points = (
+        [
+            round(point[2] / (config.hip.z_gap * (200 / len(hip_datas))), 0)
+            for point in hip_datas.cr_points
+        ]
+        if hip_datas.cr_points
+        else []
+    )
+
+    if dev_metrics.cr_points:
+        dev_metrics.cr_points = [
+            dev_metrics.cr_points[2],
+            dev_metrics.cr_points[1],
+            dev_metrics.cr_points[0],
+        ]
+
+    dev_metrics.total_frames = len(hip_datas)
+
+    hip_datas.dev_metrics = dev_metrics
+
+    return hip_datas

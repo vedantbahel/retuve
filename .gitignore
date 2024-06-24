@@ -1,0 +1,11 @@
+# Retuve Speciic
+/shared
+/results
+/batch
+/sql
+/web
+
+__pycache__
+
+.coverage
+.vscode

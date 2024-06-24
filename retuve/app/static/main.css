@@ -1,0 +1,354 @@
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: #f5f5f5;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+header {
+    background-color: #0b375b;
+    padding: 20px;
+    color: #fff;
+    text-align: center;
+    font-size: 2rem;
+    font-weight: bold;
+}
+
+.container {
+    display: flex;
+    flex: 1;
+    margin: 0;
+}
+
+#current-file {
+    font-family: sans-serif;
+}
+
+.file-list {
+    flex-direction: column;
+    display: flex;
+    padding: 10px;
+    background-color: #f0f0f0;
+    min-width: 200px;
+    max-width: 25%;
+    box-sizing: border-box;
+    flex: 1;
+}
+
+.file-list-dynamic {
+    overflow-y: scroll;
+    height: 350px;
+}
+
+.content-viewer {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    padding-bottom: 60px;
+    /* Add padding at the bottom to make space for the footer */
+}
+
+button,
+a {
+    margin-bottom: 10px;
+    cursor: pointer;
+    width: 100%;
+    box-sizing: border-box;
+    background-color: #0b375b;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    font-size: 1.2rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.file-list-buttons button,
+.file-list-buttons a {
+    width: 45%;
+    text-align: center;
+    text-justify: center;
+}
+
+.file-list-buttons {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 10px;
+    align-items: center;
+}
+
+.show-buttons {
+    display: flex;
+    flex-direction: column;
+    width: 30%;
+}
+
+.content-viewer button {
+    width: 75%;
+}
+
+.viewer-button {
+    align-self: center;
+    margin: 10px;
+}
+
+.completed {
+    background-color: rgb(105, 187, 105);
+}
+
+.failed {
+    background-color: rgb(165, 79, 79);
+}
+
+.dead {
+    background-color: rgb(194, 99, 186);
+}
+
+.dead_with_results {
+    background-color: rgb(98, 110, 179);
+}
+
+.pending {
+    background-color: rgb(164, 164, 164);
+}
+
+.show-content {
+    width: 100%;
+    height: 100%;
+}
+
+.show-content img,
+.show-content video {
+    width: 100%;
+    height: 90%;
+    object-fit: contain;
+}
+
+.show-content iframe {
+    width: 100%;
+    height: 70vh;
+}
+
+.content-data {
+    display: flex;
+    flex-direction: row;
+    height: 70vh;
+}
+
+.search-bar {
+    margin-bottom: 10px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+#feedback-container button {
+    width: 100%;
+}
+
+#feedback-input {
+    width: 100%;
+    height: 100px;
+    margin-bottom: 10px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1rem;
+    box-sizing: border-box;
+}
+
+#feedback-messages {
+    border: 1px solid #ccc;
+    padding: 10px;
+    margin-bottom: 10px;
+    height: 150px;
+    overflow-y: auto;
+    list-style-type: none;
+}
+
+#feedback-messages p {
+    background-color: #f9f9f9;
+    padding: 5px;
+    border-radius: 5px;
+    margin-bottom: 5px;
+    border: 1px solid #ddd;
+}
+
+img {
+    object-fit: contain;
+}
+
+#metrics-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #fff;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+#metrics-table,
+#metrics-table th,
+#metrics-table td {
+    border: 1px solid #ddd;
+}
+
+#metrics-table th,
+#metrics-table td {
+    padding: 10px;
+    text-align: left;
+}
+
+footer {
+    background-color: #f5f5f5;
+    padding: 20px;
+    text-align: center;
+    font-size: 0.9rem;
+    color: #666;
+    margin-top: auto;
+    /* Push the footer to the bottom */
+}
+
+/* Index File */
+
+.index-container {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 20px;
+    min-height: calc(90vh - 120px);
+}
+
+body.index-body {
+    font-family: 'Roboto', sans-serif;
+    background-color: #f5f5f5;
+    margin: 0;
+    padding: 0;
+    display: block;
+}
+
+h1 {
+    color: #0b375b;
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+}
+
+ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+li {
+    background-color: #fff;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin: 10px;
+    padding: 20px;
+    flex: 1 1 200px;
+}
+
+body.index-body a {
+    color: #0b375b;
+    text-decoration: none;
+    font-size: 1.2rem;
+    background-color: white;
+    box-shadow: None;
+}
+
+.upload-link {
+    display: inline-block;
+    background-color: #0b375b !important;
+    color: #fff !important;
+    padding: 10px 20px;
+    border-radius: 4px;
+    margin-top: 20px;
+    font-size: 1.2rem;
+}
+
+
+/* Upload File */
+
+form {
+    background-color: #fff;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+input[type="file"],
+select {
+    margin-bottom: 20px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1.2rem;
+}
+
+input[type="submit"],
+.back-button {
+    background-color: #0b375b;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    margin-top: 20px;
+}
+
+a.upload-back-button {
+    background-color: #0b375b !important;
+    color: #fff !important;
+    width: auto !important;
+}
+
+
+/* Download Page */
+
+.download-buttons {
+    display: flex;
+    flex-direction: row;
+}
+
+.download-buttons a {
+    width: auto;
+    background-color: #0b375b !important;
+    color: #fff !important;
+    margin-right: 20px;
+}
+
+.download-link {
+    background-color: #0b375b;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    margin-top: 20px;
+}
+
+.back-button {
+    background-color: #0b375b;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    margin-top: 20px;
+}
