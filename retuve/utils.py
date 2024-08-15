@@ -3,10 +3,20 @@ Utility functions for the Retuve package.
 """
 
 import logging
+import os
 import statistics
+import sys
 from typing import List, Tuple
 
 from retuve.typehints import MidLine
+
+if getattr(sys, "frozen", False):
+    # If the application is run as a bundle, the PyInstaller bootloader
+    # extends the sys module by a flag frozen=True and sets the app
+    # path into variable _MEIPASS'.
+    RETUVE_DIR = sys._MEIPASS
+else:
+    RETUVE_DIR = os.path.dirname(os.path.realpath(__file__))
 
 
 def rmean(values: List[float]) -> float:

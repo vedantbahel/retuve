@@ -117,3 +117,20 @@ async def download_files(
             "keyphrase": keyphrase,
         },
     )
+
+
+@router.get("/ui/live/", response_class=HTMLResponse)
+async def live_ui(request: Request):
+    """
+    Open the live page of the Retuve Web Interface.
+    """
+
+    keyphrases = [keyphrase for keyphrase in Config.configs.keys()]
+
+    return web_templates.TemplateResponse(
+        f"live.html",
+        {
+            "request": request,
+            "keyphrases": keyphrases,
+        },
+    )

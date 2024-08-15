@@ -20,9 +20,7 @@ from retuve.keyphrases.subconfig import (
     VisualsConfig,
 )
 from retuve.logs import ulogger
-
-# get this files dir
-FILE_DIR = os.path.dirname(os.path.abspath(__file__))
+from retuve.utils import RETUVE_DIR
 
 
 class Config:
@@ -122,12 +120,12 @@ class Config:
         # defaults need registering
         if self.visuals.default_font_size:
             self.visuals.font_h1 = ImageFont.truetype(
-                f"{FILE_DIR}/../files/RobotoMono-Regular.ttf",
+                f"{RETUVE_DIR}/files/RobotoMono-Regular.ttf",
                 self.visuals.default_font_size,
             )
 
             self.visuals.font_h2 = ImageFont.truetype(
-                f"{FILE_DIR}/../files/RobotoMono-Regular.ttf",
+                f"{RETUVE_DIR}/files/RobotoMono-Regular.ttf",
                 self.visuals.default_font_size,
             )
 

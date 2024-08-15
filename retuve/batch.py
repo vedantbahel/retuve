@@ -18,9 +18,6 @@ from retuve.keyphrases.config import Config
 from retuve.keyphrases.enums import Outputs
 from retuve.logs import ulogger
 
-# get the dir of this file
-FILE_DIR = os.path.dirname(os.path.realpath(__file__))
-
 
 def run_single(config: Config, file_name: str, for_batch: bool = False):
     """
