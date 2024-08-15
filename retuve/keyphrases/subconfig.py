@@ -3,6 +3,7 @@ All the subconfigs for Retuve
 """
 
 import os
+import sys
 from typing import Any, Dict, List, Literal, Union
 
 from PIL import ImageFont
@@ -19,8 +20,7 @@ from retuve.keyphrases.enums import (
     Outputs,
 )
 from retuve.typehints import GeneralModeFuncType
-
-FILE_DIR = os.path.dirname(os.path.abspath(__file__))
+from retuve.utils import RETUVE_DIR
 
 
 class HipConfig:
@@ -236,12 +236,12 @@ class VisualsConfig:
 
         if not font_h1:
             self.font_h1 = ImageFont.truetype(
-                f"{FILE_DIR}/../files/RobotoMono-Regular.ttf",
+                f"{RETUVE_DIR}/files/RobotoMono-Regular.ttf",
                 self.default_font_size,
             )
 
         if not font_h2:
             self.font_h2 = ImageFont.truetype(
-                f"{FILE_DIR}/../files/RobotoMono-Regular.ttf",
+                f"{RETUVE_DIR}/files/RobotoMono-Regular.ttf",
                 self.default_font_size,
             )

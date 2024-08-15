@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Retuve Handlheld</title>
+    <link rel="stylesheet" href="/static/main.css">
+</head>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        text-align: center;
+        margin: 0;
+        padding: 0;
+    }
+
+    #video-container {
+        margin-top: 50px;
+    }
+
+    video {
+        width: 80%;
+        max-width: 600px;
+    }
+</style>
+</head>
+
+<body>
+    <header>Retuve</header>
+    <h1>Retuve Model Analysis Results</h1>
+    <div id="video-container">
+        <video id="result-video" controls>
+            Your browser does not support the video tag.
+        </video>
+    </div>
+    <footer>&copy; 2024 Adam McArthur</footer>
+
+
+    <script>
+        async function pollApi() {
+            try {
+                const response = await fetch('/api/live/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams({
+                        'keyphrase': 'live'
+                    })
+                });
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.video_url) {
+                        const video = document.getElementById('result-video');
+                        // only replace if different
+                        if (video.src !== result.video_url) {
+                            video.src = result.video_url;
+                        }
+                    } else {
+                        console.error('Video URL not found in response');
+                    }
+                } else if (response.status === 422) {
+                    console.error('Unprocessable Entity: Stopping further attempts.');
+                    return;  // Break the loop without fatal error
+                } else {
+                    console.error('Failed to fetch data:', response.statusText);
+                }
+            } catch (error) {
+                console.error('Error while polling API:', error);
+            }
+        }
+
+        // Poll the API every 5 seconds
+        setInterval(pollApi, 5000);
+
+        // Initial poll
+        pollApi();
+    </script>
+</body>
+
+</html>

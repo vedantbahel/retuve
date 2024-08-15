@@ -6,9 +6,6 @@ import os
 
 from PIL import ImageColor
 
-# get this files dir
-FILE_DIR = os.path.dirname(os.path.abspath(__file__))
-
 
 class Colors:
     """

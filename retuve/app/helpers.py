@@ -17,15 +17,15 @@ from retuve.keyphrases.config import Config
 from retuve.logs import ulogger
 from retuve.trak.data import database_init
 from retuve.typehints import GeneralModeFuncType
+from retuve.utils import RETUVE_DIR
 
-LOCAL_APP_DIR = os.path.dirname(os.path.realpath(__file__))
 # create a temp dir
 TMP_RESULTS_DIR = f"/tmp/retuve_api_results/"
 
 API_RESULTS_URL_ACCESS = "api_results"
 TMP_RESULTS_URL_ACCESS = "/results"
 
-web_templates = Jinja2Templates(directory=f"{LOCAL_APP_DIR}/static")
+web_templates = Jinja2Templates(directory=f"{RETUVE_DIR}/app/static")
 
 
 class AppConfigInfo:
@@ -48,6 +48,8 @@ def app_init(app: fastapi.FastAPI):
     """
 
     app.config = {}
+    app.instance_id_cache = None
+    app.model_response_cache = None
     origins = []
 
     for _, config in Config.get_configs():
@@ -74,7 +76,7 @@ def app_init(app: fastapi.FastAPI):
 
         app.mount(
             "/static",
-            StaticFiles(directory=f"{LOCAL_APP_DIR}/static"),
+            StaticFiles(directory=f"{RETUVE_DIR}/app/static"),
             name="static",
         )
 

@@ -23,8 +23,10 @@ from retuve.hip_us.handlers.side import set_side
 from retuve.hip_us.metrics.dev import get_dev_metrics
 from retuve.hip_us.modes.landmarks import landmarks_2_metrics_us
 from retuve.hip_us.modes.seg import pre_process_segs_us, segs_2_landmarks_us
-from retuve.hip_us.multiframe import (find_graf_plane,
-                                      get_3d_metrics_and_visuals)
+from retuve.hip_us.multiframe import (
+    find_graf_plane,
+    get_3d_metrics_and_visuals,
+)
 from retuve.hip_xray.classes import DevMetricsXRay, HipDataXray, LandmarksXRay
 from retuve.hip_xray.draw import draw_hips_xray
 from retuve.hip_xray.landmarks import landmarks_2_metrics_xray
