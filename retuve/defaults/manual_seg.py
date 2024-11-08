@@ -73,9 +73,6 @@ def manual_predict_us(
     if not config:
         config = Config.get_config(keyphrase)
 
-    if config.visuals.scale_image:
-        images = [ImageOps.contain(image, (1024, 1024)) for image in images]
-
     # seg is a nifti file, open it
     if not seg:
         raise ValueError("seg file is required")
@@ -83,12 +80,6 @@ def manual_predict_us(
     results, _ = convert_nifti_to_image_labels(
         seg, crop_coordinates=config.crop_coordinates
     )
-
-    if config.visuals.scale_image:
-        results = [
-            ImageOps.contain(result, (1024, 1024), Image.NEAREST)
-            for result in results
-        ]
 
     classes = {
         LabelColours.LABEL1: HipLabelsUS.IlliumAndAcetabulum,
@@ -194,12 +185,7 @@ def manual_predict_xray(
     seg_results = []
 
     for image, landmarks in zip(images, landmark_list):
-        if config.visuals.scale_image:
-            resized_image = ImageOps.contain(image, (1024, 1024))
-        else:
-            resized_image = image
-
-        A, B = resized_image.size
+        A, B = image.size
 
         if scale_landmarks:
             for key, (x, y) in landmarks.items():
@@ -227,7 +213,7 @@ def manual_predict_xray(
         box_l = (box_l[0], box_l[1], box_l[0] + box_l[2], box_l[1] + box_l[3])
         box_r = (box_r[0], box_r[1], box_r[0] + box_r[2], box_r[1] + box_r[3])
 
-        resized_image = np.array(resized_image)
+        image = np.array(image)
 
         seg_objects = [
             SegObject(
@@ -245,9 +231,7 @@ def manual_predict_xray(
                 conf=1.0,
             ),
         ]
-        seg_result = SegFrameObjects(
-            img=resized_image, seg_objects=seg_objects
-        )
+        seg_result = SegFrameObjects(img=image, seg_objects=seg_objects)
 
         seg_results.append(seg_result)
         landmark_results.append(landmarks)

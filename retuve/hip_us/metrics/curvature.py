@@ -105,7 +105,7 @@ def draw_curvature(
         overlay.draw_text(
             f"{title}: {curvature}",
             int(hip.landmarks.left[0]),
-            int(hip.landmarks.left[1] - 240),
+            int(hip.landmarks.left[1] - 80),
             header="h2",
         )
 

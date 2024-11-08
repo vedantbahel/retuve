@@ -46,7 +46,16 @@ class Metric3D:
             self.graf = graf
             self.ant = ant
 
-            self.full = round((post + graf + ant) / 3, 2)
+            average_calc = []
+            for val in [post, graf, ant]:
+                if val > 0:
+                    average_calc.append(val)
+
+            if len(average_calc) == 0:
+                self.full = 0
+            else:
+                self.full = round(sum(average_calc) / len(average_calc), 2)
+
         else:
             self.name = name
             self.post, self.graf, self.ant = "N/A", "N/A", "N/A"

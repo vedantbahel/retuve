@@ -27,8 +27,8 @@ visuals = VisualsConfig(
     font_h1=None,
     font_h2=None,
     default_font_size=12,
-    seg_color=Colors(Colors.RED),
-    seg_alpha=0.5,
+    seg_color=Colors(Colors.PURPLE),
+    seg_alpha=0.4,
     bounding_box_color=Colors(Colors.BLUE),
     bounding_box_thickness=2,
     text_color=Colors(Colors.WHITE),
@@ -42,7 +42,6 @@ visuals = VisualsConfig(
     display_full_metric_names=False,
     display_boxes=False,
     display_segs=False,
-    scale_image=True,
 )
 
 hip = HipConfig(

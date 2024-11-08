@@ -2,13 +2,13 @@
 Handles bad Hip Data Objects by removing outliers and empty frames.
 """
 
-import time
 from typing import List
+
+import numpy as np
 
 from retuve.hip_us.classes.general import HipDatasUS, HipDataUS
 from retuve.hip_us.metrics.alpha import bad_alpha
 from retuve.keyphrases.config import Config
-from retuve.logs import log_timings
 
 
 def remove_outliers(hip_datas: HipDatasUS, config: Config) -> List[bool]:
@@ -46,6 +46,51 @@ def remove_outliers(hip_datas: HipDatasUS, config: Config) -> List[bool]:
     return keep
 
 
+def left_apex_line_flat(hip: HipDataUS) -> bool:
+    """
+    Check if the left apex line is flat.
+
+    :param hip: HipDataUS object.
+
+    :return: Boolean indicating if the left apex line is flat.
+    """
+    if hip.landmarks.left is None or hip.landmarks.apex is None:
+        return True
+
+    C, A, B = (
+        np.array(hip.landmarks.left),
+        np.array(hip.landmarks.apex),
+        np.array((hip.landmarks.apex[0], hip.landmarks.left[1])),
+    )
+
+    a = np.linalg.norm(C - B)
+    b = np.linalg.norm(C - A)
+
+    angle = np.arccos((a**2 + b**2 - np.linalg.norm(A - B) ** 2) / (2 * a * b))
+    angle = np.degrees(angle)
+
+    return abs(angle) < 10
+
+
+def apex_right_points_too_close(hip: HipDataUS) -> bool:
+    """
+    Check if the apex and right points are too close.
+
+    :param hip: HipDataUS object.
+
+    :return: Boolean indicating if the apex and right points are too close.
+    """
+    if hip.landmarks.right is None or hip.landmarks.apex is None:
+        return True
+
+    return (
+        np.linalg.norm(
+            np.array(hip.landmarks.right) - np.array(hip.landmarks.apex)
+        )
+        < 30
+    )
+
+
 def handle_bad_frames(hip_datas: HipDatasUS, config: Config) -> HipDatasUS:
     """
     Handle bad frames by removing outliers and empty frames.
@@ -55,18 +100,13 @@ def handle_bad_frames(hip_datas: HipDatasUS, config: Config) -> HipDatasUS:
 
     :return: HipDatasUS object.
     """
-    timings = []
-
     keep = remove_outliers(hip_datas, config)
 
     for i, hip in enumerate(hip_datas):
-        start = time.time()
 
         empty_hip = HipDataUS(
             frame_no=hip.frame_no,
         )
-
-        timings.append(time.time() - start)
 
         if not keep[i]:
             hip_datas[i] = empty_hip
@@ -82,10 +122,12 @@ def handle_bad_frames(hip_datas: HipDatasUS, config: Config) -> HipDatasUS:
             hip_datas[i] = empty_hip
             continue
 
-        if bad_alpha(hip):
+        if bad_alpha(hip) or not left_apex_line_flat(hip):
             hip_datas[i] = empty_hip
             continue
 
-    log_timings(timings, title="Bad Frame Handling Speed:")
+        if apex_right_points_too_close(hip):
+            hip_datas[i] = empty_hip
+            continue
 
     return hip_datas

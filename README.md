@@ -93,6 +93,8 @@ git clone https://github.com/radoss-org/retuve.git
 
 You can then install retuve with poetry, and then run the tests:
 
+**NOTE: These tests are about testing consistency between changes, and not directly testing the accuracy of the AI. See `changenotes` for tracking.**
+
 ```bash
 # Needed for the scripts
 pip install poethepoet

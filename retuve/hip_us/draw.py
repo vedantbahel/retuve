@@ -3,18 +3,24 @@ All unique drawing functions for Hip Ultrasound
 """
 
 import io
+import textwrap
 import time
-from typing import List
+from typing import List, Tuple
 
 import cv2
 import numpy as np
 import plotly.graph_objects as go
-from PIL import Image
+from PIL import Image, ImageOps
 from radstract.data.nifti import NIFTI, convert_images_to_nifti_labels
 
 from retuve.classes.draw import Overlay
 from retuve.classes.seg import SegFrameObjects
-from retuve.draw import draw_landmarks, draw_seg
+from retuve.draw import (
+    TARGET_SIZE,
+    draw_landmarks,
+    draw_seg,
+    resize_data_for_display,
+)
 from retuve.hip_us.classes.enums import Side
 from retuve.hip_us.classes.general import HipDatasUS, HipDataUS
 from retuve.hip_us.handlers.side import get_side_metainfo
@@ -24,7 +30,7 @@ from retuve.hip_us.metrics.curvature import draw_curvature
 from retuve.hip_us.multiframe import FemSphere
 from retuve.hip_us.multiframe.models import circle_radius_at_z
 from retuve.keyphrases.config import Config
-from retuve.logs import log_timings
+from retuve.logs import log_timings, ulogger
 
 
 def draw_fem_head(
@@ -53,7 +59,6 @@ def draw_fem_head(
 def draw_hips_us(
     hip_datas: HipDatasUS,
     results: List[SegFrameObjects],
-    shape: tuple,
     fem_sph: FemSphere,
     config: Config,
 ) -> tuple[List[np.ndarray], NIFTI]:
@@ -62,7 +67,6 @@ def draw_hips_us(
 
     :param hip_datas: The Hip Datas
     :param results: The Segmentation Results
-    :param shape: The Shape of the Image
     :param fem_sph: The Femoral Sphere
     :param config: The Config
 
@@ -76,35 +80,55 @@ def draw_hips_us(
     for hip, seg_frame_objs in zip(hip_datas, results):
         start = time.time()
 
-        overlay = Overlay((shape[0], shape[1], 3), config)
+        final_hip, final_seg_frame_objs, final_image = resize_data_for_display(
+            hip, seg_frame_objs
+        )
 
-        overlay = draw_seg(seg_frame_objs, overlay, config)
+        overlay = Overlay(
+            (final_image.shape[0], final_image.shape[1], 3), config
+        )
 
-        overlay = draw_landmarks(hip, overlay)
+        overlay = draw_seg(final_seg_frame_objs, overlay, config)
 
-        overlay = draw_alpha(hip, overlay, config)
-        overlay = draw_coverage(hip, overlay, config)
-        overlay = draw_curvature(hip, overlay, config)
+        overlay = draw_landmarks(final_hip, overlay)
+
+        overlay = draw_alpha(final_hip, overlay, config)
+        overlay = draw_coverage(final_hip, overlay, config)
+        overlay = draw_curvature(final_hip, overlay, config)
 
         if fem_sph and config.hip.display_fem_guess:
             overlay = draw_fem_head(
-                hip,
+                final_hip,
                 fem_sph,
                 overlay,
                 config.hip.z_gap,
             )
 
-        overlay = draw_other(
-            hip, seg_frame_objs, hip_datas.graf_frame, overlay, config
+        overlay, is_graf = draw_other(
+            final_hip,
+            final_seg_frame_objs,
+            hip_datas.graf_frame,
+            overlay,
+            final_image.shape[:2],
+            config,
         )
 
-        img = overlay.apply_to_image(seg_frame_objs.img)
+        img = overlay.apply_to_image(final_image)
 
         if config.seg_export:
-            test = overlay.get_nifti_frame(seg_frame_objs)
+            original_image = seg_frame_objs.img
+            test = overlay.get_nifti_frame(
+                seg_frame_objs,
+                # NOTE(sharpz7) I do not know why this needs to be reversed
+                (original_image.shape[1], original_image.shape[0]),
+            )
             nifti_frames.append(test)
 
-        image_arrays.append(img)
+        # if its the graf frame, append 5 copies
+        repeats = len(image_arrays) // 5 if is_graf else 1
+        for _ in range(repeats):
+            image_arrays.append(img)
+
         draw_timings.append(time.time() - start)
 
     start = time.time()
@@ -118,7 +142,9 @@ def draw_hips_us(
         nifti = convert_images_to_nifti_labels(frames)
     else:
         nifti = None
-    log_timings([time.time() - start], title="Nifti Conversion Speed:")
+
+    if (time.time() - start) > 0.1:
+        log_timings([time.time() - start], title="Nifti Conversion Speed:")
 
     log_timings(draw_timings, title="Drawing Speed:")
 
@@ -130,8 +156,9 @@ def draw_other(
     seg_frame_objs: SegFrameObjects,
     graf_frame: int,
     overlay: Overlay,
+    shape: tuple,
     config: Config,
-) -> Overlay:
+) -> Tuple[Overlay, bool]:
     """
     Draw the other meta information on the image
 
@@ -153,14 +180,14 @@ def draw_other(
             header="h1",
         )
 
-    shape = seg_frame_objs.img.shape
+    is_graf = hip.frame_no == graf_frame and hip.landmarks
 
     # Check if graf alpha
-    if hip.frame_no == graf_frame and hip.landmarks:
+    if is_graf:
         overlay.draw_text(
             f"Grafs Frame",
             int(hip.landmarks.left[0]),
-            int(hip.landmarks.left[1] - 80),
+            int(hip.landmarks.left[1] - 120),
             header="h2",
             grafs=True,
         )
@@ -195,7 +222,7 @@ def draw_other(
             overlay.draw_cross(closest_illium)
             overlay.draw_cross(mid)
 
-    return overlay
+    return overlay, is_graf
 
 
 def draw_table(shape: tuple, hip_datas: HipDatasUS) -> np.ndarray:
@@ -207,31 +234,41 @@ def draw_table(shape: tuple, hip_datas: HipDatasUS) -> np.ndarray:
 
     :return: The Image with the Table and any errors
     """
+    start = time.time()
+
+    # Create empty image with the specified shape
+    empty_img = np.zeros((shape[1], shape[0], 3), dtype=np.uint8)
+
+    # Find new shape by running 1024 algo
+    shape = ImageOps.contain(Image.fromarray(empty_img), (TARGET_SIZE)).size[
+        :2
+    ]
+
     headers = [""] + hip_datas.metrics[0].names()
     values = []
 
     for metrics in reversed(hip_datas.metrics):
         values.append(metrics.dump())
 
-    # https://stackoverflow.com/questions/8421337/rotating-a-two-dimensional-array-in-python
+    # Rotate and transpose the values list
     values = list(zip(*values[::-1]))
 
+    # Create a Plotly figure for the table
     fig = go.Figure(
         data=[
             go.Table(
-                header=dict(values=headers, font=dict(size=24), height=50),
+                header=dict(values=headers, font=dict(size=18), height=50),
                 cells=dict(
                     values=values,
                     fill=dict(color=["paleturquoise", "white"]),
-                    font=dict(size=24),
-                    height=50,  # Adjust header cell height
+                    font=dict(size=18),
+                    height=50,
                 ),
             )
         ]
     )
 
-    MARGIN = 60
-
+    MARGIN = 30
     fig.update_layout(
         autosize=False,
         width=shape[1],
@@ -239,20 +276,53 @@ def draw_table(shape: tuple, hip_datas: HipDatasUS) -> np.ndarray:
         margin=dict(l=MARGIN, r=MARGIN, b=MARGIN, t=MARGIN),
     )
 
-    # save to bytes
+    # Save the figure as bytes
     img_bytes = fig.to_image(format="png", width=shape[1], height=shape[0])
-    # return PIL image
 
-    # draw the text on the data_image
+    # Convert image bytes to numpy array
     data_image = np.array(Image.open(io.BytesIO(img_bytes)).convert("RGB"))
 
-    cv2.putText(
-        data_image,
-        str(hip_datas.recorded_error),
-        (10, data_image.shape[1] - 30),
-        cv2.FONT_HERSHEY_SIMPLEX,
-        0.8,
-        (0, 0, 0),
+    # Text Wrapping Logic
+    recorded_error_text = str(hip_datas.recorded_error)
+
+    # Set the maximum width for the text box in pixels
+    max_text_width = data_image.shape[1] - 20  # Margin of 10px from both sides
+    font_scale = 0.8
+    font = cv2.FONT_HERSHEY_SIMPLEX
+    font_thickness = 2
+
+    # Estimate the width of each character based on the font
+    (text_width, text_height), _ = cv2.getTextSize(
+        recorded_error_text, font, font_scale, font_thickness
     )
+    char_width = (
+        text_width // len(recorded_error_text) if recorded_error_text else 1
+    )  # Estimate width of one char
+
+    # Wrap the text based on character width and max text width
+    wrap_width = max_text_width // char_width
+    wrapped_text = textwrap.fill(recorded_error_text, width=wrap_width)
+
+    # Split the wrapped text into lines
+    lines = wrapped_text.split("\n")
+
+    # Draw each line of wrapped text
+    y = data_image.shape[0] - 300  # Starting y position
+    line_height = text_height + 10  # Spacing between lines
+    for line in lines:
+        # Put each line of text on the image
+        cv2.putText(
+            data_image,
+            line,
+            (10, y),
+            font,
+            font_scale,
+            (0, 0, 0),
+            font_thickness,
+        )
+        y += line_height  # Move down for the next line
+
+    # Log the time taken to draw the table
+    ulogger.info(f"Table Drawing Time: {time.time() - start:.2f}s")
 
     return data_image

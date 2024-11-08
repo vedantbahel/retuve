@@ -23,10 +23,45 @@ class DrawTypes(Enum):
     SEGS = "segs"
     TEXT = "text"
     POINTS = "points"
+    CIRCLE = "circle"
+    RECTANGLE = "rectangle"
 
     @classmethod
     def ALL(cls) -> List["DrawTypes"]:
-        return [cls.LINES, cls.SEGS, cls.TEXT, cls.POINTS]
+        """
+        Specified in order of drawing.
+        """
+        return [
+            cls.SEGS,
+            cls.LINES,
+            cls.CIRCLE,
+            cls.RECTANGLE,
+            cls.POINTS,
+            cls.TEXT,
+        ]
+
+    @classmethod
+    def type_to_func(cls, draw, dtype):
+        """
+        Returns the function to use for a given overlay type.
+
+        :param draw: ImageDraw object.
+        :param dtype: Type of overlay to draw.
+
+        :return: Function to use for a given overlay type.
+        """
+        if dtype == cls.LINES:
+            return draw.line
+        elif dtype == cls.SEGS:
+            return draw.polygon
+        elif dtype == cls.TEXT:
+            return draw.text
+        elif dtype == cls.POINTS:
+            return draw.point
+        elif dtype == cls.CIRCLE:
+            return draw.ellipse
+        elif dtype == cls.RECTANGLE:
+            return draw.rectangle
 
 
 class Overlay:
@@ -44,55 +79,56 @@ class Overlay:
         :attr config: Config object.
         """
         self.shape = (shape[0], shape[1], 4)
-        self.overlays = {}
         self.config = config
+        self.operations = {}
 
         for drtype in DrawTypes.ALL():
-            self.overlays[drtype] = []
+            self.operations[drtype] = []
 
-    def apply_to_image(self, image: Image.Image) -> np.ndarray:
-        """
-        Apply stored overlays to an image.
+    def add_operation(self, optype, *args, **kwargs):
+        # Store the drawing operation in the operations list
+        self.operations[optype].append(((args, kwargs)))
 
-        :param image: Image to apply overlays to.
+    def apply_to_image(self, image):
 
-        :return: Image with overlays applied.
-        """
-        anno_overlay, seg_overlay = self.get_overlay()
+        if not any(self.operations.values()):
+            return image
 
-        # convert image to PIL image
-        image = Image.fromarray(image).convert("RGBA")
+        image = Image.fromarray(image)
+        draw = ImageDraw.Draw(image, "RGBA")
 
-        # change the seg overlay to be semi-transparent
-        image = Image.alpha_composite(image, seg_overlay)
+        # Execute all stored operations
+        # go in order of segs, lines, points, text
+        for optype in DrawTypes.ALL():
+            for args, kwargs in self.operations[optype]:
+                func = DrawTypes.type_to_func(draw, optype)
+                func(*args, **kwargs)
 
-        # then paste the annotation overlay
-        image = Image.alpha_composite(image, anno_overlay)
+        final_image = np.array(image, dtype=np.uint8)
 
-        # convert back to numpy array
-        # image = image.convert("RGB")
-        image = np.array(image, dtype=np.uint8)
+        # remove alpha channel
+        final_image = final_image[:, :, :3]
 
-        # Remove alpha channel
-        image = image[:, :, :3]
+        return final_image
 
-        return image
-
-    def get_nifti_frame(self, seg_frame_objs: SegFrameObjects) -> Image.Image:
+    def get_nifti_frame(
+        self, seg_frame_objs: SegFrameObjects, shape: list
+    ) -> Image.Image:
         """
         Create an image with segmentation overlay ready for NIFTI storage.
 
         :param seg_frame_objs: Segmentation frame objects.
+        :param shape: Shape of the image.
 
         :return: Image with segmentation overlay.
         """
 
-        _, seg_overlay = self.blank()
+        # Create empty frame of write shape
+        seg_overlay = Image.new("RGB", shape[:2], (0, 0, 0))
+        draw = ImageDraw.Draw(seg_overlay)
 
         for seg_obj in seg_frame_objs:
             if not seg_obj.empty:
-                # use points to draw polygon
-                draw, overlay = self.blank()
                 draw.polygon(
                     seg_obj.points,
                     fill=LabelColours.get_color_from_index(
@@ -100,58 +136,7 @@ class Overlay:
                     ),
                 )
 
-                # convert overlay to rgba
-                overlay = overlay.convert("RGBA")
-                seg_overlay = Image.alpha_composite(seg_overlay, overlay)
-
-        image = seg_overlay.convert("RGB")
-
-        return image
-
-    def get_overlay(self) -> Tuple[Image.Image, Image.Image]:
-        """
-        Get all stored overlays as a single image.
-
-        Ensures that they are applied in the correct order.
-
-        :return: Tuple of the annotation overlay and segmentation overlay.
-        """
-        _, anno_overlay = self.blank()
-        _, seg_overlay = self.blank()
-
-        for overlay in self.overlays[DrawTypes.SEGS]:
-            seg_overlay = Image.alpha_composite(seg_overlay, overlay)
-
-        for overlay in self.overlays[DrawTypes.LINES]:
-            anno_overlay = Image.alpha_composite(anno_overlay, overlay)
-
-        for overlay in self.overlays[DrawTypes.POINTS]:
-            anno_overlay = Image.alpha_composite(anno_overlay, overlay)
-
-        for overlay in self.overlays[DrawTypes.TEXT]:
-            anno_overlay = Image.alpha_composite(anno_overlay, overlay)
-
-        return anno_overlay, seg_overlay
-
-    def blank(self) -> Tuple[ImageDraw.ImageDraw, Image.Image]:
-        """
-        Get a blank image and ImageDraw object ready for drawing.
-
-        :return: Tuple of ImageDraw object and blank image.
-        """
-        data = np.zeros(self.shape, dtype=np.uint8)
-        image = Image.fromarray(data).convert("RGBA")
-        return ImageDraw.Draw(image), image
-
-    def store(self, overlay, drtype: DrawTypes):
-        """
-        Store an overlay in the correct category.
-
-        :param overlay: Overlay to store.
-        :param drtype: Type of overlay.
-        """
-
-        self.overlays[drtype].append(overlay)
+        return seg_overlay
 
     def draw_cross(self, point: Tuple[int, int]):
         """
@@ -160,23 +145,22 @@ class Overlay:
         :param point: Point to draw the cross at.
         """
         x, y = point
-        draw, overlay = self.blank()
 
         radius = self.config.visuals.points_radius
         color = self.config.visuals.points_color.rgba()
 
-        draw.line(
+        self.add_operation(
+            DrawTypes.LINES,
             (x - radius, y, x + radius, y),
             fill=color,
             width=self.config.visuals.line_thickness,
         )
-        draw.line(
+        self.add_operation(
+            DrawTypes.LINES,
             (x, y - radius, x, y + radius),
             fill=color,
             width=self.config.visuals.line_thickness,
         )
-
-        self.store(overlay, DrawTypes.POINTS)
 
     def draw_segmentation(self, points: List[Tuple[int, int]]):
         """
@@ -184,15 +168,14 @@ class Overlay:
 
         :param points: List of points to draw the polygon.
         """
-        draw, overlay = self.blank()
-        draw.polygon(
+
+        self.add_operation(
+            DrawTypes.SEGS,
             points,
             fill=self.config.visuals.seg_color.rgba(
                 self.config.visuals.seg_alpha
             ),
         )
-
-        self.store(overlay, DrawTypes.SEGS)
 
     def draw_box(self, box: Tuple[int, int, int, int], grafs: bool = False):
         """
@@ -213,14 +196,12 @@ class Overlay:
             color = self.config.visuals.bounding_box_color.rgba()
             width = self.config.visuals.bounding_box_thickness
 
-        draw, overlay = self.blank()
-        draw.rectangle(
+        self.add_operation(
+            DrawTypes.RECTANGLE,
             [start_point, end_point],
             outline=color,
             width=width,
         )
-
-        self.store(overlay, DrawTypes.LINES)
 
     def draw_skeleton(self, skel: List[Tuple[int, int]]):
         """
@@ -229,16 +210,13 @@ class Overlay:
         :param skel: List of points to draw the skeleton.
         """
 
-        draw, overlay = self.blank()
         for point in skel:
             y, x = point
-            # draw a small dot
-            draw.point(
+            self.add_operation(
+                DrawTypes.POINTS,
                 (x, y),
                 fill=self.config.hip.midline_color.rgba(),
             )
-
-        self.store(overlay, DrawTypes.POINTS)
 
     def draw_lines(
         self, line_points: List[Tuple[Tuple[int, int], Tuple[int, int]]]
@@ -249,16 +227,14 @@ class Overlay:
         :param line_points: List of tuples of points to draw lines between.
 
         """
-        # Draw a line between the extreme point and the extra point
-        draw, overlay = self.blank()
 
         for point1, point2 in line_points:
-            draw.line(
+            self.add_operation(
+                DrawTypes.LINES,
                 (tuple(point1), tuple(point2)),
                 fill=self.config.visuals.line_color.rgba(),
                 width=self.config.visuals.line_thickness,
             )
-        self.store(overlay, DrawTypes.LINES)
 
     def draw_text(
         self,
@@ -278,28 +254,33 @@ class Overlay:
         :param grafs: Whether to draw with the graf frame colours or not.
 
         """
-
-        draw, overlay = self.blank()
-
         if header == "h1":
             font = self.config.visuals.font_h1
         elif header == "h2":
             font = self.config.visuals.font_h2
 
-        bbox = draw.textbbox((x1, y1), label_text, font=font)
+        temp_draw = ImageDraw.Draw(Image.new("RGBA", self.shape[:2]))
+
+        bbox = temp_draw.textbbox((x1, y1), label_text, font=font)
+
         if grafs:
             color = self.config.visuals.graf_color.rgba()
         else:
             color = self.config.visuals.background_text_color.rgba()
-        draw.rectangle(bbox, fill=color)
-        draw.text(
+
+        self.add_operation(
+            DrawTypes.RECTANGLE,
+            bbox,
+            fill=color,
+        )
+
+        self.add_operation(
+            DrawTypes.TEXT,
             (x1, y1),
             label_text,
             font=font,
             fill=self.config.visuals.text_color.rgba(),
         )
-
-        self.store(overlay, DrawTypes.TEXT)
 
     def draw_circle(self, point: Tuple[int, int], radius: int):
         """
@@ -310,11 +291,10 @@ class Overlay:
         """
 
         x, y = point
-        draw, overlay = self.blank()
-        draw.ellipse(
+
+        self.add_operation(
+            DrawTypes.CIRCLE,
             (x - radius, y - radius, x + radius, y + radius),
             outline=self.config.visuals.points_color.rgba(),
             width=self.config.visuals.line_thickness,
         )
-
-        self.store(overlay, DrawTypes.POINTS)

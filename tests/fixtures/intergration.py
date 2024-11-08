@@ -1,3 +1,5 @@
+import json
+
 import pydicom
 import pytest
 from PIL import Image
@@ -10,8 +12,8 @@ US_NII_FILE_PATH = "./tests/test-data/171551.nii.gz"
 
 class ResultInfo:
     def __init__(self):
-        self.FRAME = 4
-        self.FLIPPED = True
+        self.FRAME = 1
+        self.FLIPPED = False
 
 
 @pytest.fixture

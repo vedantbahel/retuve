@@ -147,6 +147,9 @@ class SegFrameObjects:
     def __getitem__(self, index):
         return self.seg_objects[index]
 
+    def __setitem__(self, index, value):
+        self.seg_objects[index] = value
+
     def __len__(self):
         return len(self.seg_objects)
 

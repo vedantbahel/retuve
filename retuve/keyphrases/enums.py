@@ -13,13 +13,14 @@ class Colors:
     """
 
     WHITE = (255, 255, 255)
-    RED = (255, 0, 0)
+    RED = (255, 84, 115)
     GREEN = (0, 255, 0)
     BLUE = (17, 60, 130)
     BLACK = (0, 0, 0)
     GREY = (128, 128, 128)
     DARK_RED = (139, 0, 0)
     LIGHT_BLUE = (113, 194, 245)
+    PURPLE = (215, 84, 255)
     GOLD = ImageColor.getcolor("#78620A", "RGB")
 
     def __init__(self, rgb=None):
@@ -32,6 +33,12 @@ class Colors:
         :param alpha: The alpha value
         """
         return (*self.rgb, int(alpha * 255))
+
+    def bgr(self):
+        """
+        Get the color in BGR format.
+        """
+        return self.rgb[::-1]
 
     def __repr__(self) -> str:
         return f"Color({self.rgb})"

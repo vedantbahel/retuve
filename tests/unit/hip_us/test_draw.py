@@ -15,13 +15,11 @@ def test_draw_fem_head(hip_data_us_0, fem_sph, config_us):
 def test_draw_hips_us(
     hip_datas_us, results_us, config_us, fem_sph, img_shape_us
 ):
-    images, nifti = draw_hips_us(
-        hip_datas_us, results_us, img_shape_us, fem_sph, config_us
-    )
+    images, nifti = draw_hips_us(hip_datas_us, results_us, fem_sph, config_us)
 
     assert isinstance(images, list)
     assert isinstance(images[0], np.ndarray)
-    assert images[0].shape == img_shape_us
+    assert images[0].shape == (img_shape_us[1], img_shape_us[0], 3)
 
 
 def test_draw_table(hip_datas_us, img_shape_us):

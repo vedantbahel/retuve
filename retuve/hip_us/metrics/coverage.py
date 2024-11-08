@@ -169,8 +169,8 @@ def draw_coverage(hip: HipDataUS, overlay: Overlay, config: Config) -> Overlay:
 
         overlay.draw_text(
             f"{title}: {coverage:.2f}",
-            int(xl + 50),
-            int(yl - 75),
+            int(xl + 10),
+            int(yl - 30),
             header="h2",
         )
 
