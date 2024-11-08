@@ -46,26 +46,22 @@ def test_get_3d_metrics_and_visuals_success(
     ), "Femoral sphere should be the same"
 
 
-def test_find_graf_plane_success(
-    hip_datas_us,
-):
+def test_find_graf_plane_success(hip_datas_us, results_us):
     hip_datas_us.graf_frame = None
     hip_datas_us.grafs_hip = None
 
-    hip_datas_us = find_graf_plane(hip_datas_us)
+    hip_datas_us = find_graf_plane(hip_datas_us, results_us)
     assert (
         hip_datas_us.graf_frame is not None
     ), "Graf frame should be identified"
     assert hip_datas_us.grafs_hip is not None, "Grafs hip should be identified"
 
 
-def test_find_graf_plane_no_good_graf_frames(
-    hip_datas_us,
-):
+def test_find_graf_plane_no_good_graf_frames(hip_datas_us, results_us):
     for hip_data in hip_datas_us:
         hip_data.metrics = []  # Simulate no good graf frames
 
-    hip_datas_us = find_graf_plane(hip_datas_us)
+    hip_datas_us = find_graf_plane(hip_datas_us, results_us)
     assert (
         hip_datas_us.graf_frame is not None
     ), "Graf frame should still be identified even if no good graf frames"

@@ -57,7 +57,7 @@ class HipConfig:
         :param draw_midline (bool): Draw the midline.
         :param display_fem_guess (bool): Display the femoral guess.
         :param draw_side_metainfo (bool): Draw the side metainfo.
-        :param allow_flipping (bool): Allow flipping.
+        :param allow_flipping (bool): Allow use of the 3D US Orientaition Algorithm.
         """
         self.midline_color = midline_color
         self.aca_split = aca_split
@@ -188,7 +188,6 @@ class VisualsConfig:
         display_full_metric_names: bool,
         display_boxes: bool,
         display_segs: bool,
-        scale_image: bool,
     ):
         """
         The Visuals Subconfig.
@@ -211,7 +210,6 @@ class VisualsConfig:
         :param display_full_metric_names (bool): Display full metric names.
         :param display_boxes (bool): Display boxes.
         :param display_segs (bool): Display segmentations.
-        :param scale_image (bool): Scale the image.
         """
         self.seg_color = seg_color
         self.seg_alpha = seg_alpha
@@ -232,7 +230,6 @@ class VisualsConfig:
         self.font_h1 = font_h1
         self.font_h2 = font_h2
         self.default_font_size = default_font_size
-        self.scale_image = scale_image
 
         if not font_h1:
             self.font_h1 = ImageFont.truetype(

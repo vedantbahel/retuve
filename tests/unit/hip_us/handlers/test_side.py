@@ -25,7 +25,7 @@ def test_get_side_metainfo(
 
 
 def test_set_side_no_landmarks(
-    hip_datas_us: HipDatasUS, results_us: List[SegFrameObjects]
+    hip_datas_us: HipDatasUS, results_us: List[SegFrameObjects], config_us
 ):
     hip_datas_us = copy.deepcopy(hip_datas_us)
 
@@ -34,7 +34,9 @@ def test_set_side_no_landmarks(
         hip_data.landmarks = None
         hip_data.side = None
 
-    updated_hip_datas, updated_results = set_side(hip_datas_us, results_us)
+    updated_hip_datas, updated_results = set_side(
+        hip_datas_us, results_us, config_us.hip.allow_flipping
+    )
 
     for hip_data in updated_hip_datas:
         assert (
@@ -42,8 +44,12 @@ def test_set_side_no_landmarks(
         ), "Side should be None when landmarks are missing"
 
 
-def test_set_side(hip_datas_us: HipDatasUS, results_us: List[SegFrameObjects]):
-    updated_hip_datas, updated_results = set_side(hip_datas_us, results_us)
+def test_set_side(
+    hip_datas_us: HipDatasUS, results_us: List[SegFrameObjects], config_us
+):
+    updated_hip_datas, updated_results = set_side(
+        hip_datas_us, results_us, config_us.hip.allow_flipping
+    )
 
     assert (
         updated_hip_datas is not None
@@ -73,12 +79,14 @@ def test_set_side(hip_datas_us: HipDatasUS, results_us: List[SegFrameObjects]):
 
 
 def test_set_side_error_handling(
-    hip_datas_us: HipDatasUS, results_us: List[SegFrameObjects]
+    hip_datas_us: HipDatasUS, results_us: List[SegFrameObjects], config_us
 ):
     # Manipulate hip_datas to create a condition where no front side is detected
     hip_datas_us.graf_frame = 0  # Ensuring no front side frames
 
-    updated_hip_datas, updated_results = set_side(hip_datas_us, results_us)
+    updated_hip_datas, updated_results = set_side(
+        hip_datas_us, results_us, config_us.hip.allow_flipping
+    )
 
     assert (
         "No Front Side." in updated_hip_datas.recorded_error.errors
@@ -105,10 +113,12 @@ def manipulated_hip_datas(hip_datas_us):
 
 
 def test_set_side_swap_post_ant(
-    manipulated_hip_datas: HipDatasUS, results_us: List[SegFrameObjects]
+    manipulated_hip_datas: HipDatasUS,
+    results_us: List[SegFrameObjects],
+    config_us,
 ):
     updated_hip_datas, updated_results = set_side(
-        manipulated_hip_datas, results_us
+        manipulated_hip_datas, results_us, config_us.hip.allow_flipping
     )
 
     assert (

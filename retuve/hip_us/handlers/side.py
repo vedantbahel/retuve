@@ -54,7 +54,9 @@ def get_side_metainfo(
 
 
 def set_side(
-    hip_datas: HipDatasUS, results: List[SegFrameObjects]
+    hip_datas: HipDatasUS,
+    results: List[SegFrameObjects],
+    allow_flipping,
 ) -> Tuple[HipDatasUS, List[SegFrameObjects]]:
     """
     Set the side for each HipDataUS object in the HipDatasUS object.
@@ -63,6 +65,7 @@ def set_side(
 
     :param hip_datas: HipDatasUS object.
     :param results: List of SegFrameObjects.
+    :param allow_flipping: Boolean indicating if flipping is allowed.
 
     :return: Tuple of HipDatasUS object and List of SegFrameObjects.
     """
@@ -106,7 +109,7 @@ def set_side(
     front_side_delta = sum(front_side) / len(front_side)
 
     flip_frames = False
-    if back_side_delta > front_side_delta:
+    if (back_side_delta > front_side_delta) and allow_flipping:
         hip_datas.recorded_error.append("Swapped Post and Ant")
         hip_datas.hip_datas = hip_datas.hip_datas[::-1]
         results = results[::-1]

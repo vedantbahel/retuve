@@ -19,7 +19,12 @@ from retuve.keyphrases.enums import Outputs
 from retuve.logs import ulogger
 
 
-def run_single(config: Config, file_name: str, for_batch: bool = False):
+def run_single(
+    config: Config,
+    file_name: str,
+    for_batch: bool = False,
+    local_savedir: str = None,
+):
     """
     Run the retuve pipeline on a single file.
 
@@ -27,12 +32,17 @@ def run_single(config: Config, file_name: str, for_batch: bool = False):
     :param file_name: The file name.
     :param for_batch: Whether the file is being processed in a batch.
                       This changes the way the file is saved.
+    :param local_savedir: The local save directory.
 
     :return: The error message if any.
     """
 
     fileid = file_name.split("/")[-1].split(".")[0]
-    savedir = config.api.savedir
+    if local_savedir:
+        savedir = local_savedir
+    else:
+        savedir = config.api.savedir
+
     hip_mode = config.batch.hip_mode
 
     if for_batch:
@@ -42,7 +52,9 @@ def run_single(config: Config, file_name: str, for_batch: bool = False):
         if os.path.exists(f"{savedir}/{fileid}metrics.json"):
             return f"File {fileid} already processed"
 
-        shutil.rmtree(f"{savedir}/{fileid}")
+        if os.path.exists(f"{savedir}/{fileid}"):
+            shutil.rmtree(f"{savedir}/{fileid}")
+
         os.makedirs(f"{savedir}/{fileid}")
     else:
         fileid += "_"
@@ -77,7 +89,7 @@ def run_single(config: Config, file_name: str, for_batch: bool = False):
             )
 
         if retuve_result.visual_3d is not None:
-            hip_datas.visual_3d.write_html(
+            retuve_result.visual_3d.write_html(
                 f"{savedir}/{fileid}{Outputs.VISUAL3D}"
             )
 

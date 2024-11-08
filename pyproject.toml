@@ -24,6 +24,7 @@ pdoc = "^14.4.0"
 deptry = "^0.16.1"
 pyinstaller = "^6.9.0"
 scikit-learn = "^1.5.1"
+pyyaml = "^6.0.2"
 
 [build-system]
 requires = ["poetry-core"]

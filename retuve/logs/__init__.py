@@ -19,6 +19,10 @@ def log_timings(timings, title=None):
     if title is None:
         title = "Speed:"
 
+    if not timings:
+        ulogger.info(f"{title} No timings to log.")
+        return
+
     total_time_ms = sum(timings)
     average_time_ms = total_time_ms / len(timings)
     ulogger.info(

@@ -57,6 +57,20 @@ class LandmarksUS:
             )
         )
 
+    def items(self) -> Dict[str, Tuple]:
+        return {
+            "left": self.left,
+            "right": self.right,
+            "apex": self.apex,
+            "point_D": self.point_D,
+            "point_d": self.point_d,
+            "mid_cov_point": self.mid_cov_point,
+        }.items()
+
+    def __setitem__(self, key: str, value: Tuple[int, int]):
+        # use setattr to avoid infinite recursion
+        setattr(self, key, value)
+
     def __repr__(self) -> str:
         return (
             f"LandmarksUS({self.left}, {self.right}, {self.apex}, "

@@ -41,7 +41,8 @@ def test_manual_predict_us(
         x
         for x in results_us[us_full_result_info.FRAME]
         if x.cls == HipLabelsUS.IlliumAndAcetabulum
-    ][0]
+    ]
+    illium = illium[0]
     new_illium = [
         x
         for x in new_results[us_full_result_info.FRAME]

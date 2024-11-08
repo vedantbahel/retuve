@@ -3,6 +3,7 @@ Contains the high-level functions that are used to run the Retuve pipeline.
 """
 
 import copy
+import time
 from typing import Any, BinaryIO, Callable, Dict, List, Tuple, Union
 
 import pydicom
@@ -32,6 +33,7 @@ from retuve.hip_xray.draw import draw_hips_xray
 from retuve.hip_xray.landmarks import landmarks_2_metrics_xray
 from retuve.keyphrases.config import Config, OperationType
 from retuve.keyphrases.enums import HipMode
+from retuve.logs import ulogger
 from retuve.typehints import GeneralModeFuncType
 
 
@@ -49,11 +51,8 @@ def process_landmarks_xray(
 
     :return: The hip datas and the image arrays.
     """
-    img = seg_results[0].img
     hip_datas_xray = landmarks_2_metrics_xray(landmark_results, config)
-    image_arrays = draw_hips_xray(
-        hip_datas_xray, seg_results, img.shape, config
-    )
+    image_arrays = draw_hips_xray(hip_datas_xray, seg_results, config)
     return hip_datas_xray, image_arrays
 
 
@@ -179,7 +178,7 @@ def analyze_synthetic_xray(
         shape = seg_frame_objs.img.shape
 
         overlay = Overlay((shape[0], shape[1], 3), config)
-        test = overlay.get_nifti_frame(seg_frame_objs)
+        test = overlay.get_nifti_frame(seg_frame_objs, shape)
         nifti_frames.append(test)
 
     # convert to nifti
@@ -212,6 +211,8 @@ def analyse_hip_3DUS(
 
     :return: The hip datas, the video clip, the 3D visual, and the dev metrics.
     """
+    start = time.time()
+
     config = Config.get_config(keyphrase)
     hip_datas = HipDatasUS()
 
@@ -227,12 +228,14 @@ def analyse_hip_3DUS(
     hip_datas = handle_bad_frames(hip_datas, config)
 
     if not any(hip.metrics for hip in hip_datas):
-        raise ValueError("No hip was found in the DICOM.")
+        dcm_patient = dcm.get("PatientID", "Unknown")
+        ulogger.error(f"No metrics were found in the DICOM {dcm_patient}.")
 
-    hip_datas = find_graf_plane(hip_datas)
+    hip_datas = find_graf_plane(hip_datas, results)
 
-    if config.hip.allow_flipping:
-        hip_datas, results = set_side(hip_datas, results)
+    hip_datas, results = set_side(
+        hip_datas, results, config.hip.allow_flipping
+    )
 
     (
         hip_datas,
@@ -245,9 +248,7 @@ def analyse_hip_3DUS(
         normals_data,
     ) = get_3d_metrics_and_visuals(hip_datas, results, config)
 
-    image_arrays, nifti = draw_hips_us(
-        hip_datas, results, shape, fem_sph, config
-    )
+    image_arrays, nifti = draw_hips_us(hip_datas, results, fem_sph, config)
 
     if config.seg_export:
         hip_datas.nifti = nifti
@@ -257,7 +258,9 @@ def analyse_hip_3DUS(
     data_image = draw_table(shape, hip_datas)
     image_arrays.append(data_image)
 
-    video_clip = ImageSequenceClip(image_arrays, fps=len(image_arrays) / 4)
+    ulogger.info(f"Total 3DUS time: {time.time() - start:.2f}s")
+
+    video_clip = ImageSequenceClip(image_arrays, fps=len(image_arrays) / 8)
 
     if config.test_data_passthrough:
         hip_datas.illium_mesh = illium_mesh
@@ -298,11 +301,11 @@ def analyse_hip_2DUS(
     config = Config.get_config(keyphrase)
 
     if config.operation_type in OperationType.SEG:
-        hip_datas, results, shape = process_segs_us(
+        hip_datas, results, _ = process_segs_us(
             config, [img], modes_func, modes_func_kwargs_dict
         )
 
-    image_arrays, _ = draw_hips_us(hip_datas, results, shape, None, config)
+    image_arrays, _ = draw_hips_us(hip_datas, results, None, config)
 
     hip_datas = get_dev_metrics(hip_datas, results, config)
 
@@ -352,12 +355,12 @@ def analyse_hip_2DUS_sweep(
         )
 
     hip_datas = handle_bad_frames(hip_datas, config)
-    hip_datas = find_graf_plane(hip_datas)
+    hip_datas = find_graf_plane(hip_datas, results)
 
     hip = hip_datas.grafs_hip
     frame = hip_datas.graf_frame
 
-    image_arrays, _ = draw_hips_us(hip_datas, results, shape, None, config)
+    image_arrays, _ = draw_hips_us(hip_datas, results, None, config)
 
     hip_datas = get_dev_metrics(hip_datas, results, config)
 

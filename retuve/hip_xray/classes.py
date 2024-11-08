@@ -102,6 +102,20 @@ class LandmarksXRay:
             ]
         )
 
+    def items(self) -> Dict[str, Tuple]:
+        return {
+            "pel_l_o": self.pel_l_o,
+            "pel_l_i": self.pel_l_i,
+            "pel_r_o": self.pel_r_o,
+            "pel_r_i": self.pel_r_i,
+            "fem_l": self.fem_l,
+            "fem_r": self.fem_r,
+        }.items()
+
+    def __setitem__(self, key: str, value: Tuple[int, int]):
+        # use setattr to avoid infinite recursion
+        setattr(self, key, value)
+
 
 class HipDataXray:
     """

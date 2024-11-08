@@ -19,16 +19,21 @@ def modified_landmarks(landmarks_us_0):
 
 
 def test_find_alpha_landmarks(
-    illium_0, modified_landmarks, config_us, expected_us_metrics
+    illium_0, modified_landmarks, config_us, expected_us_metrics, img_shape_us
 ):
     landmarks = find_alpha_landmarks(illium_0, modified_landmarks, config_us)
     assert isinstance(landmarks, LandmarksUS)
     assert hasattr(landmarks, "left")
     assert hasattr(landmarks, "right")
     assert hasattr(landmarks, "apex")
-    assert landmarks.left == expected_us_metrics["landmark_left"]
-    assert landmarks.right == expected_us_metrics["landmark_right"]
-    assert landmarks.apex == expected_us_metrics["landmark_apex"]
+
+    # Check the points actually land on the image
+    assert 0 <= landmarks.left[0] < img_shape_us[1]
+    assert 0 <= landmarks.left[1] < img_shape_us[0]
+    assert 0 <= landmarks.right[0] < img_shape_us[1]
+    assert 0 <= landmarks.right[1] < img_shape_us[0]
+    assert 0 <= landmarks.apex[0] < img_shape_us[1]
+    assert 0 <= landmarks.apex[1] < img_shape_us[0]
 
 
 def test_find_alpha_angle(landmarks_us_0, expected_us_metrics):

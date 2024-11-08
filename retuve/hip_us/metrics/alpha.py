@@ -34,6 +34,9 @@ def find_alpha_landmarks(
 
     left_most, right_most = find_midline_extremes(illium.midline_moved)
 
+    if right_most is None or left_most is None:
+        return landmarks
+
     # get the equation for the line between the two extreme points
     # y = mx + b
     m = (right_most[0] - left_most[0]) / (right_most[1] - left_most[1])
@@ -94,6 +97,9 @@ def find_alpha_landmarks(
         best_apex_point = tuple(midline_moved[apex_point_index])
 
         left_most, right_most = find_midline_extremes(illium.midline)
+        if right_most is None or left_most is None:
+            return landmarks
+
         left_most, right_most = tuple(reversed(left_most)), tuple(
             reversed(right_most)
         )
@@ -108,6 +114,16 @@ def find_alpha_landmarks(
             landmarks.left = left_most
             landmarks.right = right_most
             landmarks.apex = best_apex_point
+
+    # Move apex line down and left by 5% of the
+    # distance between the left and right points
+    # if landmarks.left and landmarks.right and landmarks.apex:
+    #     landmarks.apex = (
+    #         landmarks.apex[0]
+    #         - 0.05 * (landmarks.right[0] - landmarks.left[0]),
+    #         landmarks.apex[1]
+    #         - 0.05 * (landmarks.right[1] - landmarks.left[1]),
+    #     )
 
     # reversed because cv2 uses (y, x)??
     return landmarks
@@ -191,7 +207,7 @@ def draw_alpha(hip: HipDataUS, overlay: Overlay, config: Config) -> Overlay:
         overlay.draw_text(
             f"{title}: {alpha}",
             int(hip.landmarks.left[0]),
-            int(hip.landmarks.left[1] - 120),
+            int(hip.landmarks.left[1] - 40),
             header="h2",
         )
 

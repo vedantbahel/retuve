@@ -1,0 +1,84 @@
+description: |
+  The Initial Recorded results of Retuve for all the different modalities.
+current_output:
+  3dus:
+    metrics:
+    - Aca:
+      - 61.58
+      - 62.66
+      - 59.25
+      - 61.16
+    - Cen. ratio:
+      - N/A
+      - N/A
+      - N/A
+      - 0.55
+    - Alpha:
+      - 71.24
+      - 71.4
+      - 70.18
+      - 70.94
+    - Coverage:
+      - 0.64
+      - 0.604
+      - 0.61
+      - 0.62
+    - Curvature:
+      - 1.68
+      - 1.6
+      - 1.72
+      - 1.67
+    graf_frame: 6
+    dev_metrics:
+      os_ichium_detected: true
+      no_frames_segmented: 15
+      no_frames_marked: 10
+      graf_frame: 6
+      acetabular_mid_frame: 8
+      fem_mid_frame: 7
+      critial_error: false
+      cr_points:
+      - 0.0
+      - 11.0
+      - 5.0
+      total_frames: 15
+    recorded_error:
+    keyphrase: default_US
+  xray:
+    metrics:
+    - ace_index_left: 24.4
+    - ace_index_right: 27.8
+    keyphrase: default_xray
+    dev_metrics: {}
+  us_sweep:
+    metrics:
+    - alpha: 71.4
+    - coverage: 0.604
+    - curvature: 1.6
+    keyphrase: default_US
+    dev_metrics:
+      os_ichium_detected: true
+      no_frames_segmented: 15
+      no_frames_marked: 10
+      graf_frame: 6
+      acetabular_mid_frame: 8
+      fem_mid_frame: 7
+      critial_error: false
+      cr_points: []
+      total_frames: 15
+  2dus:
+    metrics:
+    - alpha: 67.3
+    - coverage: 0.579
+    - curvature: 1.85
+    keyphrase: default_US
+    dev_metrics:
+      os_ichium_detected: true
+      no_frames_segmented: 1
+      no_frames_marked: 1
+      graf_frame: null
+      acetabular_mid_frame: 0
+      fem_mid_frame: 0
+      critial_error: false
+      cr_points: []
+      total_frames: 1

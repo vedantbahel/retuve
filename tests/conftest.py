@@ -1,16 +1,21 @@
 import copy
 import gzip
+import json
 import logging
 import os
 import pickle
 from typing import List
 
 import afterthought
+import numpy as np
 import open3d as o3d
 import pytest
+import yaml
+from PIL import Image, ImageOps
 
 from retuve.classes.seg import SegFrameObjects, SegObject
 from retuve.defaults.hip_configs import default_US, default_xray
+from retuve.draw import TARGET_SIZE
 from retuve.hip_us.classes.enums import HipLabelsUS
 from retuve.hip_us.classes.general import HipDatasUS, LandmarksUS
 from retuve.hip_xray.classes import HipDataXray, LandmarksXRay
@@ -57,6 +62,10 @@ with gzip.open("./tests/test-data/pre_edited_results.pkl.gz", "rb") as f:
 
 with gzip.open("./tests/test-data/pre_edited_landmarks.pkl.gz", "rb") as f:
     data_pre_edited_landmarks = pickle.load(f)
+
+
+with open(f"tests/test-data/224_DDH_115.json", "r") as f:
+    json_xray_landmarks = f.read()
 
 
 @pytest.fixture
@@ -171,7 +180,9 @@ def normals_data() -> List:
 
 @pytest.fixture
 def img_shape_us(results_us_0) -> tuple:
-    return results_us_0.img.shape
+    empty_img = np.zeros(results_us_0.img.shape, dtype=np.uint8)
+
+    return ImageOps.contain(Image.fromarray(empty_img), (TARGET_SIZE)).size[:2]
 
 
 @pytest.fixture
@@ -243,17 +254,41 @@ def img_shape_xray(seg_results_xray) -> tuple:
 
 @pytest.fixture
 def landmarks_xray():
-    return {
-        "pel_l_o": [37, 97],
-        "pel_l_i": [54, 106],
-        "pel_r_o": [181, 96],
-        "pel_r_i": [164, 103],
-        "fem_l": [40, 109],
-        "fem_r": [176, 107],
-    }
+    return json.loads(json_xray_landmarks)[0]["landmark_list"][0]
 
 
 pytest_plugins = [
     "tests.fixtures.intergration",
     "tests.fixtures.unit",
 ]
+
+
+def load_previous_release_note():
+    # Locate the most recent YAML file in ./changenotes/
+    release_dir = "./changenotes/"
+    yaml_files = [f for f in os.listdir(release_dir) if f.endswith(".yaml")]
+    yaml_files.sort(reverse=True)
+    if yaml_files:
+        with open(os.path.join(release_dir, yaml_files[0]), "r") as f:
+            return yaml.safe_load(f), yaml_files[0]
+    return None, None
+
+
+previous_data, previous_filename = load_previous_release_note()
+current_output = previous_data["current_output"]
+
+@pytest.fixture
+def metrics_3d_us():
+    return current_output["3dus"]
+
+@pytest.fixture
+def metrics_xray():
+    return current_output["xray"]
+
+@pytest.fixture
+def metrics_2d_us():
+    return current_output["2dus"]
+
+@pytest.fixture
+def metrics_2d_sweep():
+    return current_output["us_sweep"]

@@ -42,6 +42,7 @@ def main(
     keyphrase_file: str = None,
     keyphrase: str = None,
     file_name: str = None,
+    savedir: str = None,
 ):
     """
     Run the retuve package.
@@ -50,6 +51,7 @@ def main(
     :param keyphrase_file: The keyphrase file.
     :param keyphrase: The keyphrase.
     :param file_name: The file name.
+    :param savedir: The save directory
     """
 
     load_keyphrase_config(keyphrase_file)
@@ -72,7 +74,7 @@ def main(
     ulogger.info(f"Using keyphrase_file: {keyphrase_file}")
 
     if task == "single":
-        run_single(config, file_name)
+        run_single(config, file_name, local_savedir=savedir)
 
     elif task == "batch":
         run_batch(config)
