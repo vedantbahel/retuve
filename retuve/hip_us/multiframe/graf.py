@@ -128,7 +128,12 @@ def graf_frame_algo(
     file_id=None,
 ):
     """
-    Get the Graf Frame for the hip US module as a weighted mix of the max alpha value and flatness of the angle.
+    Get the Graf Frame for the hip US module as a weighted
+    mix of the max alpha value and flatness of the angle.
+
+    See an analysis of how these weights were found here: https://files.mcaq.me/xj3kb.png.
+
+    The code will be included directly in Retuve in the future update.
 
     :param hip_zipped_data: The hip data and results.
     :param max_alpha: The Max Alpha
