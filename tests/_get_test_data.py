@@ -309,3 +309,15 @@ if previous_data is None or has_changes(
     )
 else:
     print("No changes detected; no new release note created.")
+
+
+# print warning to inspect the results manually, specifically
+# the video and xray image
+print(
+    "\nWARNING\n"
+    "=======================\n"
+    "Please inspect the results manually, specifically the video and xray image."
+)
+# print the file locations
+print(f"Video: {test_data_dir}/video_us.mp4")
+print(f"Xray Image: {test_data_dir}/img_xray.jpg")
