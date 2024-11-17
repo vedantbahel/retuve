@@ -1,0 +1,86 @@
+description: |
+  This change implemented a new algorithim for the graf-frame calculation,
+  as well as changing how coverage and alpha are calculated.
+
+current_output:
+  3dus:
+    metrics:
+    - Aca:
+      - 58.71  # Modified
+      - 64.62  # Modified
+      - 61.05  # Modified
+      - 61.46  # Modified
+    - Cen. ratio:
+      - N/A
+      - N/A
+      - N/A
+      - 0.55
+    - Alpha:
+      - 62.05  # Modified
+      - 62.2  # Modified
+      - 60.3  # Modified
+      - 61.52  # Modified
+    - Coverage:
+      - 0.59  # Modified
+      - 0.561  # Modified
+      - 0.57  # Modified
+      - 0.57  # Modified
+    - Curvature:
+      - 1.84  # Modified
+      - 1.77  # Modified
+      - 1.93  # Modified
+      - 1.85  # Modified
+    graf_frame: 5  # Modified
+    dev_metrics:
+      os_ichium_detected: true
+      no_frames_segmented: 15
+      no_frames_marked: 10
+      graf_frame: 5  # Modified
+      acetabular_mid_frame: 8
+      fem_mid_frame: 7
+      critial_error: false
+      cr_points:
+      - 0.0
+      - 11.0
+      - 5.0
+      total_frames: 15
+    recorded_error: null
+    keyphrase: default_US
+  xray:
+    metrics:
+    - ace_index_left: 24.4
+    - ace_index_right: 27.8
+    keyphrase: default_xray
+    dev_metrics: {}
+  us_sweep:
+    metrics:
+    - alpha: 62.2  # Modified
+    - coverage: 0.561  # Modified
+    - curvature: 1.77  # Modified
+    keyphrase: default_US
+    dev_metrics:
+      os_ichium_detected: true
+      no_frames_segmented: 15
+      no_frames_marked: 10
+      graf_frame: 5  # Modified
+      acetabular_mid_frame: 8
+      fem_mid_frame: 7
+      critial_error: false
+      cr_points: []
+      total_frames: 15
+  2dus:
+    metrics:
+    - alpha: 57.2  # Modified
+    - coverage: 0.526  # Modified
+    - curvature: 2.05  # Modified
+    keyphrase: default_US
+    dev_metrics:
+      os_ichium_detected: true
+      no_frames_segmented: 1
+      no_frames_marked: 1
+      graf_frame: null
+      acetabular_mid_frame: 0
+      fem_mid_frame: 0
+      critial_error: false
+      cr_points: []
+      total_frames: 1

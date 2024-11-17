@@ -12,6 +12,9 @@ from retuve.keyphrases.config import Config
 from retuve.keyphrases.enums import MetricUS
 from retuve.utils import find_midline_extremes
 
+# To move the apex point left or right
+APEX_RIGHT_FACTOR = 0
+
 
 def find_alpha_landmarks(
     illium: SegObject, landmarks: LandmarksUS, config: Config
@@ -94,9 +97,16 @@ def find_alpha_landmarks(
             np.argmax(masked_distances), masked_distances.shape
         )
         best_point = tuple(points_on_line[point_index])
-        best_apex_point = tuple(midline_moved[apex_point_index])
+        # Check APEX_RIGHT_FACTOR is within bounds
+        if apex_point_index + APEX_RIGHT_FACTOR < len(midline_moved):
+            factor = APEX_RIGHT_FACTOR
+        else:
+            # max possible factor
+            factor = len(midline_moved) - apex_point_index - 1
 
-        left_most, right_most = find_midline_extremes(illium.midline)
+        best_apex_point = tuple(midline_moved[apex_point_index + factor])
+
+        left_most, right_most = find_midline_extremes(illium.midline_moved)
         if right_most is None or left_most is None:
             return landmarks
 
@@ -114,16 +124,6 @@ def find_alpha_landmarks(
             landmarks.left = left_most
             landmarks.right = right_most
             landmarks.apex = best_apex_point
-
-    # Move apex line down and left by 5% of the
-    # distance between the left and right points
-    # if landmarks.left and landmarks.right and landmarks.apex:
-    #     landmarks.apex = (
-    #         landmarks.apex[0]
-    #         - 0.05 * (landmarks.right[0] - landmarks.left[0]),
-    #         landmarks.apex[1]
-    #         - 0.05 * (landmarks.right[1] - landmarks.left[1]),
-    #     )
 
     # reversed because cv2 uses (y, x)??
     return landmarks

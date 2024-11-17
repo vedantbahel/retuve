@@ -3,6 +3,7 @@ Metric: Coverage
 """
 
 import numpy as np
+from networkx import diameter
 from radstract.math import smart_find_intersection
 
 from retuve.classes.draw import Overlay
@@ -10,6 +11,8 @@ from retuve.classes.seg import SegObject
 from retuve.hip_us.classes.general import HipDataUS, LandmarksUS
 from retuve.keyphrases.config import Config
 from retuve.keyphrases.enums import MetricUS
+
+FEM_HEAD_SCALE_FACTOR = 0.18
 
 
 def find_cov_landmarks(
@@ -45,12 +48,11 @@ def find_cov_landmarks(
     diameter_1 = abs(most_right_point[0] - most_left_point[0])
     diameter_2 = abs(bottom_most_point[1] - top_most_point[1])
 
-    # This is because we have problems with the bottom of the fermoral head being
-    # hidden
-    if ((diameter_1 - diameter_2) / diameter_1) < 0.16:
-        diameter = diameter_2
-    else:
-        diameter = diameter_1 - (diameter_1 * 0.15)
+    # Reject frames with a non-circular femoral head
+    if abs((diameter_1 - diameter_2) / diameter_1) > 0.35:
+        return landmarks
+
+    diameter = diameter_2
 
     # take half of the diameter
     radius = diameter / 2
@@ -98,7 +100,6 @@ def find_cov_landmarks(
         )
 
     # ensure that point_above and point_below are the right way round
-    # This can
     # (Larger y represents down)
     if point_above[1] > point_below[1]:
         point_above, point_below = point_below, point_above

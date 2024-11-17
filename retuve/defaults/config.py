@@ -45,7 +45,7 @@ visuals = VisualsConfig(
 )
 
 hip = HipConfig(
-    midline_color=Colors(Colors.BLUE),
+    midline_color=Colors(Colors.WHITE),
     aca_split=ACASplit.GRAFS,
     cr_fem_pos=CRFem.CENTER,
     fem_extention=0.1,

@@ -116,6 +116,13 @@ class SegObject:
     def __str__(self):
         return f"SegObject({self.cls}, {self.conf}, {self.points})"
 
+    def area(self):
+        """
+        Returns the area of the object.
+        """
+        # Use the mask to calculate the area
+        return np.sum(self.mask[:, :, 0] == 255)
+
 
 class SegFrameObjects:
     """

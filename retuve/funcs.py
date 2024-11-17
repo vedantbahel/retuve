@@ -216,6 +216,10 @@ def analyse_hip_3DUS(
     config = Config.get_config(keyphrase)
     hip_datas = HipDatasUS()
 
+    file_id = modes_func_kwargs_dict.get("file_id")
+    if file_id:
+        del modes_func_kwargs_dict["file_id"]
+
     if config.operation_type == OperationType.SEG:
         hip_datas, results, shape = process_segs_us(
             config, dcm, modes_func, modes_func_kwargs_dict
@@ -231,6 +235,7 @@ def analyse_hip_3DUS(
         dcm_patient = dcm.get("PatientID", "Unknown")
         ulogger.error(f"No metrics were found in the DICOM {dcm_patient}.")
 
+    hip_datas.file_id = file_id
     hip_datas = find_graf_plane(hip_datas, results)
 
     hip_datas, results = set_side(
