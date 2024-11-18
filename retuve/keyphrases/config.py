@@ -111,6 +111,10 @@ class Config:
         """
         self.name = name
 
+        # check if config already exists
+        if self.configs.get(name):
+            raise ValueError(f"Config {name} already exists.")
+
         if not self.configs.get(name) and store:
             self.configs[name] = {}
 
@@ -135,6 +139,15 @@ class Config:
 
         if not self.api.api_token:
             ValueError("API token must be set.")
+
+    def unregister(self):
+        """
+        Unregister the config.
+        """
+        if self.name in self.configs:
+            del self.configs[self.name]
+
+        ulogger.info(f"Unregistered config for {self.name}")
 
     def get_copy(self) -> "Config":
         """
