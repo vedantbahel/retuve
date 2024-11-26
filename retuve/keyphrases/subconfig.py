@@ -188,6 +188,8 @@ class VisualsConfig:
         display_full_metric_names: bool,
         display_boxes: bool,
         display_segs: bool,
+        min_vid_fps: int,
+        min_vid_length: int,
     ):
         """
         The Visuals Subconfig.
@@ -210,6 +212,8 @@ class VisualsConfig:
         :param display_full_metric_names (bool): Display full metric names.
         :param display_boxes (bool): Display boxes.
         :param display_segs (bool): Display segmentations.
+        :param min_vid_fps (int): The minimum video fps.
+        :param min_vid_length (int): The minimum video length
         """
         self.seg_color = seg_color
         self.seg_alpha = seg_alpha
@@ -226,6 +230,8 @@ class VisualsConfig:
         self.display_full_metric_names = display_full_metric_names
         self.display_boxes = display_boxes
         self.display_segs = display_segs
+        self.min_vid_fps = min_vid_fps
+        self.min_vid_length = min_vid_length
 
         self.font_h1 = font_h1
         self.font_h2 = font_h2

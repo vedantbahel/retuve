@@ -24,10 +24,8 @@ from retuve.hip_us.handlers.side import set_side
 from retuve.hip_us.metrics.dev import get_dev_metrics
 from retuve.hip_us.modes.landmarks import landmarks_2_metrics_us
 from retuve.hip_us.modes.seg import pre_process_segs_us, segs_2_landmarks_us
-from retuve.hip_us.multiframe import (
-    find_graf_plane,
-    get_3d_metrics_and_visuals,
-)
+from retuve.hip_us.multiframe import (find_graf_plane,
+                                      get_3d_metrics_and_visuals)
 from retuve.hip_xray.classes import DevMetricsXRay, HipDataXray, LandmarksXRay
 from retuve.hip_xray.draw import draw_hips_xray
 from retuve.hip_xray.landmarks import landmarks_2_metrics_xray
@@ -35,6 +33,25 @@ from retuve.keyphrases.config import Config, OperationType
 from retuve.keyphrases.enums import HipMode
 from retuve.logs import ulogger
 from retuve.typehints import GeneralModeFuncType
+
+
+def get_fps(no_of_frames: int, min_fps=30, min_vid_length=6) -> int:
+    """
+    Get the frames per second for the video clip.
+
+    Should be min_fps or number of fps to produce 6 min_vid_length of video.
+
+    :param no_of_frames: The number of frames.
+    :param min_fps: The minimum frames per second.
+    :param min_vid_length: The minimum video length.
+
+    :return: The frames per second.
+    """
+    return (
+        min_fps
+        if no_of_frames > (min_fps * min_vid_length)
+        else no_of_frames // min_vid_length
+    )
 
 
 def process_landmarks_xray(
@@ -272,7 +289,14 @@ def analyse_hip_3DUS(
 
     ulogger.info(f"Total 3DUS time: {time.time() - start:.2f}s")
 
-    video_clip = ImageSequenceClip(image_arrays, fps=len(image_arrays) / 8)
+    video_clip = ImageSequenceClip(
+        image_arrays,
+        fps=get_fps(
+            len(image_arrays),
+            config.visuals.min_vid_fps,
+            config.visuals.min_vid_length,
+        ),
+    )
 
     if config.test_data_passthrough:
         hip_datas.illium_mesh = illium_mesh
@@ -381,7 +405,13 @@ def analyse_hip_2DUS_sweep(
 
     image = Image.fromarray(image)
 
-    video_clip = ImageSequenceClip(image_arrays, fps=len(image_arrays) / 4)
+    video_clip = ImageSequenceClip(
+        image_arrays, fps=get_fps(
+            len(image_arrays),
+            config.visuals.min_vid_fps,
+            config.visuals.min_vid_length,
+        ),
+    )
 
     return hip, image, hip_datas.dev_metrics, video_clip
 
