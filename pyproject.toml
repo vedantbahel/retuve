@@ -48,7 +48,7 @@ testcap = "pytest -vv --cov=retuve --durations=5 --capture-errors ./tests/unit"
 test = "pytest -vv -n 4 --cov=retuve --durations=5 ./tests"
 test_unit = "pytest -vv -n 4 --cov=retuve --durations=5 ./tests/unit"
 test_intergration = "pytest -vv -n 4 --cov=retuve --durations=5 ./tests/intergration"
-test_all = "pytest -vv -n 4 --cov=retuve --durations=5 ./examples/_test.py ./tests"
+test_all = "pytest -vv -n 4 --cov=retuve --dist=loadgroup --durations=5 ./examples/_test.py ./tests"
 deadcode = "vulture retuve ./scripts/whitelist.py"
 copiedcode = [{ cmd = "sudo npm install -g jscpd" }, { cmd = "jscpd retuve" }]
 linecount = [
@@ -59,7 +59,7 @@ cuda = "python -c 'import torch; print(torch.cuda.is_available())'"
 pdoc_create = "pdoc -d numpy -o web retuve --logo https://files.mcaq.me/52kj1.png"
 docs = [{ cmd = "poe pdoc_create" }]
 viewdocs = [{ cmd = "poe docs" }, { cmd = "npx http-server -o ./web/" }]
-examples = "pytest ./examples/_test.py"
+examples = "pytest -n 4 --vv --dist=loadgroup ./examples/_test.py"
 testgen = "poetry run python ./tests/_get_test_data.py"
 help_real.shell = """
     echo
