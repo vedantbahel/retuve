@@ -26,6 +26,7 @@ pyinstaller = "^6.9.0"
 scikit-learn = "^1.5.1"
 pyyaml = "^6.0.2"
 filelock = "^3.16.1"
+pytest-xdist = "^3.6.1"
 
 [build-system]
 requires = ["poetry-core"]
@@ -44,9 +45,10 @@ priority = "primary"
 # Under BSD: https://www.creatis.insa-lyon.fr/software/public/Gdcm/License.html
 license = "licensecheck --ignore-packages=gdcm"
 testcap = "pytest -vv --cov=retuve --durations=5 --capture-errors ./tests/unit"
-test = "pytest -vv --cov=retuve --durations=5 ./tests/unit"
-test_intergration = "pytest -vv --cov=retuve --durations=5 ./tests/intergration"
-test_all = "pytest -vv --cov=retuve --durations=5 ./tests ./examples/_test.py"
+test = "pytest -vv -n 4 --cov=retuve --durations=5 ./tests"
+test_unit = "pytest -vv -n 4 --cov=retuve --durations=5 ./tests/unit"
+test_intergration = "pytest -vv -n 4 --cov=retuve --durations=5 ./tests/intergration"
+test_all = "pytest -vv -n 4 --cov=retuve --durations=5 ./examples/_test.py ./tests"
 deadcode = "vulture retuve ./scripts/whitelist.py"
 copiedcode = [{ cmd = "sudo npm install -g jscpd" }, { cmd = "jscpd retuve" }]
 linecount = [
