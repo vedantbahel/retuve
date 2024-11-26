@@ -12,8 +12,13 @@ from radstract.data.dicom import DicomTypes
 from torch.types import Device
 
 from retuve.keyphrases.enums import OperationType
-from retuve.keyphrases.subconfig import (APIConfig, BatchConfig, HipConfig,
-                                         TrakConfig, VisualsConfig)
+from retuve.keyphrases.subconfig import (
+    APIConfig,
+    BatchConfig,
+    HipConfig,
+    TrakConfig,
+    VisualsConfig,
+)
 from retuve.logs import ulogger
 from retuve.utils import RETUVE_DIR, register_config_dirs
 
@@ -190,4 +195,5 @@ class Config:
 
         :return: Whether the keyphrase exists.
         """
-        return name in cls.configs.keys()
+        lower_keys = [key.lower() for key in cls.configs.keys()]
+        return name.lower() in lower_keys
