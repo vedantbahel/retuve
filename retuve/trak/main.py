@@ -6,7 +6,7 @@ import time
 from retuve.app.classes import File, FileEnum
 from retuve.app.helpers import API_RESULTS_URL_ACCESS
 from retuve.keyphrases.config import Config
-from retuve.keyphrases.enums import Outputs
+from retuve.keyphrases.enums import HipMode, Outputs
 from retuve.logs import ulogger
 from retuve.trak.data import extract_files, insert_files
 
@@ -63,9 +63,13 @@ def get_state(config: Config) -> bool:
             updated.state = FileEnum.COMPLETED
 
         else:
-            # Insert Empty Images automatically
             os.makedirs(os.path.join(save_dir, file_id), exist_ok=True)
-            shutil.copyfile(file, os.path.join(save_dir, file_id, "img.jpg"))
+
+            # Insert Empty Images automatically, if mode is not 3D
+            if config.batch.hip_mode != HipMode.US3D:
+                shutil.copyfile(
+                    file, os.path.join(save_dir, file_id, "img.jpg")
+                )
 
         new_states[file_id] = updated
 
