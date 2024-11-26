@@ -12,15 +12,10 @@ from radstract.data.dicom import DicomTypes
 from torch.types import Device
 
 from retuve.keyphrases.enums import OperationType
-from retuve.keyphrases.subconfig import (
-    APIConfig,
-    BatchConfig,
-    HipConfig,
-    TrakConfig,
-    VisualsConfig,
-)
+from retuve.keyphrases.subconfig import (APIConfig, BatchConfig, HipConfig,
+                                         TrakConfig, VisualsConfig)
 from retuve.logs import ulogger
-from retuve.utils import RETUVE_DIR
+from retuve.utils import RETUVE_DIR, register_config_dirs
 
 
 class Config:
@@ -135,10 +130,12 @@ class Config:
 
         self.batch.register()
 
-        ulogger.info(f"Registered config for {name}")
+        register_config_dirs(self)
 
         if not self.api.api_token:
             ValueError("API token must be set.")
+
+        ulogger.info(f"Registered config for {name}")
 
     def unregister(self):
         """
