@@ -12,7 +12,6 @@ from fastapi import APIRouter, Form, HTTPException, Request
 from retuve import __version__ as retuve_version
 from retuve.app.classes import Metric2D, Metric3D, ModelResponse
 from retuve.app.helpers import TMP_RESULTS_DIR, TMP_RESULTS_URL_ACCESS
-from retuve.defaults.manual_seg import manual_predict_us_dcm
 from retuve.funcs import retuve_run
 from retuve.keyphrases.config import Config
 from retuve.testdata import Cases, download_case
@@ -54,10 +53,14 @@ async def analyse_image(
         try:
             # Usage example:
             latest_dicom, instance_id = await get_latest_dicom_image(
-                "http://localhost:8042"
+                "http://localhost:8042", "orthanc", "orthanc"
             )
 
         except Exception as e:
+            # Log error
+            hippa_logger.error(
+                f"{keyphrase} failed to process due to: {str(e)}"
+            )
             raise NoDicomFoundError(
                 "No DICOM images found on the Orthanc server."
             )
@@ -71,15 +74,15 @@ async def analyse_image(
 
         request.app.instance_id_cache = instance_id
 
-        _, seg_file = download_case(Cases.ULTRASOUND_DICOM)
+        # if config does not have mode_func_kwargs_dict, set it to empty dict
+        if not hasattr(config.batch, "mode_func_kwargs_dict"):
+            config.batch.mode_func_kwargs_dict = {}
 
         result = retuve_run(
             hip_mode=config.batch.hip_mode,
             config=config,
-            modes_func=manual_predict_us_dcm,
-            modes_func_kwargs_dict={
-                "seg": seg_file,
-            },
+            modes_func=config.batch.mode_func,
+            modes_func_kwargs_dict=config.batch.mode_func_kwargs_dict,
             file=f"{TMP_RESULTS_DIR}/{instance_id}.dcm",
         )
 
