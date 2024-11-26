@@ -42,6 +42,8 @@ visuals = VisualsConfig(
     display_full_metric_names=False,
     display_boxes=False,
     display_segs=False,
+    min_vid_length=6,
+    min_vid_fps=30,
 )
 
 hip = HipConfig(

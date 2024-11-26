@@ -12,6 +12,7 @@ import open3d as o3d
 import pytest
 import yaml
 from PIL import Image, ImageOps
+from xdist.scheduler.loadfile import LoadFileScheduling
 
 from retuve.classes.seg import SegFrameObjects, SegObject
 from retuve.defaults.hip_configs import default_US, default_xray
@@ -20,6 +21,10 @@ from retuve.hip_us.classes.enums import HipLabelsUS
 from retuve.hip_us.classes.general import HipDatasUS, LandmarksUS
 from retuve.hip_xray.classes import HipDataXray, LandmarksXRay
 from retuve.keyphrases.config import Config
+
+logging.basicConfig(level=logging.DEBUG)
+log = logging.getLogger(__name__)
+
 
 # check if test-data exists, otherwise print a message
 if not os.path.exists("tests/test-data"):
@@ -277,17 +282,21 @@ def load_previous_release_note():
 previous_data, previous_filename = load_previous_release_note()
 current_output = previous_data["current_output"]
 
+
 @pytest.fixture
 def metrics_3d_us():
     return current_output["3dus"]
+
 
 @pytest.fixture
 def metrics_xray():
     return current_output["xray"]
 
+
 @pytest.fixture
 def metrics_2d_us():
     return current_output["2dus"]
+
 
 @pytest.fixture
 def metrics_2d_sweep():

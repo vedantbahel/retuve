@@ -17,7 +17,7 @@ from retuve.keyphrases.config import Config
 from retuve.logs import ulogger
 from retuve.trak.data import database_init
 from retuve.typehints import GeneralModeFuncType
-from retuve.utils import RETUVE_DIR
+from retuve.utils import RETUVE_DIR, register_config_dirs
 
 # create a temp dir
 TMP_RESULTS_DIR = f"/tmp/retuve_api_results/"
@@ -54,11 +54,7 @@ def app_init(app: fastapi.FastAPI):
 
     for _, config in Config.get_configs():
         # create batch and results dirs if they don't exist
-        dirs = [TMP_RESULTS_DIR, config.api.savedir]
-        for dir in dirs:
-            if not os.path.exists(dir):
-                ulogger.info(f"Creating directory: {dir}")
-                os.makedirs(dir)
+        register_config_dirs(config, other_dirs=[TMP_RESULTS_DIR])
 
         database_init(config.api.db_path)
 

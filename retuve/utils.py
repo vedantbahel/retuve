@@ -8,6 +8,7 @@ import statistics
 import sys
 from typing import List, Tuple
 
+from retuve.logs import ulogger
 from retuve.typehints import MidLine
 
 if getattr(sys, "frozen", False):
@@ -17,6 +18,25 @@ if getattr(sys, "frozen", False):
     RETUVE_DIR = sys._MEIPASS
 else:
     RETUVE_DIR = os.path.dirname(os.path.realpath(__file__))
+
+
+def register_config_dirs(config, other_dirs=[]):
+    hippa_log_file_dir = os.path.dirname(config.api.hippa_logging_file)
+    sql_path = os.path.dirname(config.api.db_path)
+    dirs = [
+        config.api.savedir,
+        config.api.upload_dir,
+        hippa_log_file_dir,
+        sql_path,
+    ]
+
+    dirs.extend(other_dirs)
+    dirs.extend(config.trak.datasets)
+
+    for dir in dirs:
+        if dir and not os.path.exists(dir):
+            ulogger.info(f"Creating directory: {dir}")
+            os.makedirs(dir)
 
 
 def rmean(values: List[float]) -> float:

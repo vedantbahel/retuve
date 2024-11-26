@@ -20,7 +20,7 @@ from retuve.keyphrases.subconfig import (
     VisualsConfig,
 )
 from retuve.logs import ulogger
-from retuve.utils import RETUVE_DIR
+from retuve.utils import RETUVE_DIR, register_config_dirs
 
 
 class Config:
@@ -135,10 +135,12 @@ class Config:
 
         self.batch.register()
 
-        ulogger.info(f"Registered config for {name}")
+        register_config_dirs(self)
 
         if not self.api.api_token:
             ValueError("API token must be set.")
+
+        ulogger.info(f"Registered config for {name}")
 
     def unregister(self):
         """
@@ -193,4 +195,5 @@ class Config:
 
         :return: Whether the keyphrase exists.
         """
-        return name in cls.configs.keys()
+        lower_keys = [key.lower() for key in cls.configs.keys()]
+        return name.lower() in lower_keys

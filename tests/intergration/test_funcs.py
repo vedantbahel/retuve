@@ -51,6 +51,7 @@ def test_retuve_run_3DUS(us_file_path, metrics_3d_us):
         file=us_file_path,
     )
     del retuve_result.metrics["recorded_error"]
+    del metrics_3d_us["recorded_error"]
 
     assert retuve_result.metrics == metrics_3d_us
 

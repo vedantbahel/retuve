@@ -25,14 +25,46 @@ def collect_scripts():
 scripts = collect_scripts()
 for i, (script_path, module_dir) in enumerate(scripts):
     # test_name should be derived from the script name
-    test_name = f'test_{script_path.split("/")[-1].replace(".py", "")}'
+    test_name = f'test_{script_path.split("/")[-1].replace(".py", "").replace("_", "")}'
 
-    def create_test(script_path, module_dir):
+    # divide i to fit into 4 groups
+    group_no = i % 4 + 1
+
+    def create_test(script_path, module_dir, temp_dir):
+        @pytest.mark.xdist_group(name=f"group{group_no}")
         def test():
             try:
+                # Capture the initial state of the directory
+                initial_files = set(os.listdir(temp_dir))
+
+                # Set up the environment
                 env = os.environ.copy()
                 env["PYTHONPATH"] = module_dir
+
+                # Run the script
                 subprocess.run(["python", script_path], check=True, env=env)
+
+                # Capture the state of the directory after the script runs
+                final_files = set(os.listdir(temp_dir))
+
+                # Identify new files created during script execution
+                new_files = final_files - initial_files
+
+                # Filter only files with the specified extensions
+                target_extensions = {".html", ".mp4", ".jpg", ".png"}
+                files_to_remove = [
+                    file_name
+                    for file_name in new_files
+                    if os.path.splitext(file_name)[1].lower()
+                    in target_extensions
+                ]
+
+                # Delete the filtered files
+                for file_name in files_to_remove:
+                    file_path = os.path.join(temp_dir, file_name)
+                    if os.path.isfile(file_path):
+                        os.remove(file_path)
+
             except subprocess.CalledProcessError as e:
                 pytest.fail(
                     f"Script failed: {script_path}\nError message: {e}"
@@ -41,4 +73,4 @@ for i, (script_path, module_dir) in enumerate(scripts):
         return test
 
     # Add the test function to the global scope
-    globals()[test_name] = create_test(script_path, module_dir)
+    globals()[test_name] = create_test(script_path, module_dir, "./")

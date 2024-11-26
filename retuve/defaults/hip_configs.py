@@ -28,3 +28,6 @@ default_xray.visuals.default_font_size = 20
 default_xray.visuals.bounding_box_thickness = 7
 
 default_xray.register(name="default_xray", store=False)
+
+live = default_US.get_copy()
+# live.register(name="live", store=False)
