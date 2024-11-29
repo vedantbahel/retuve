@@ -1,6 +1,6 @@
 ![Retuve](https://files.mcaq.me/52kj1.png)
 
-# Retuve - The first fully Open Source Infant Hip Analysis Package
+# Retuve - The first Open, Collaborative Framework for Infant Hip Health using AI
 
 Retuve (from the scottish gaelic `Ri taobh` meaning `beside`) is a framework for analysing infant hips. It is designed to be a flexible and extensible framework that can be used by developers, AI researchers and clinicians.
 
