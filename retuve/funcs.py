@@ -181,29 +181,22 @@ def analyze_synthetic_xray(
         config = keyphrase
 
     images = convert_dicom_to_images(dcm)
-
-    # Split images into chunks of 500
-    def chunk_images(images, chunk_size=500):
-        for i in range(0, len(images), chunk_size):
-            yield images[i : i + chunk_size]
-
     nifti_frames = []
 
-    for image_chunk in chunk_images(images, chunk_size=500):
-        if config.operation_type in OperationType.LANDMARK:
-            landmark_results, seg_results = modes_func(
-                image_chunk, keyphrase, **modes_func_kwargs_dict
-            )
-            hip_datas, image_arrays = process_landmarks_xray(
-                config, landmark_results, seg_results
-            )
+    if config.operation_type in OperationType.LANDMARK:
+        landmark_results, seg_results = modes_func(
+            images, keyphrase, **modes_func_kwargs_dict
+        )
+        hip_datas, image_arrays = process_landmarks_xray(
+            config, landmark_results, seg_results
+        )
 
-        for hip, seg_frame_objs in zip(hip_datas, seg_results):
-            shape = seg_frame_objs.img.shape
+    for hip, seg_frame_objs in zip(hip_datas, seg_results):
+        shape = seg_frame_objs.img.shape
 
-            overlay = Overlay((shape[0], shape[1], 3), config)
-            test = overlay.get_nifti_frame(seg_frame_objs, shape)
-            nifti_frames.append(test)
+        overlay = Overlay((shape[0], shape[1], 3), config)
+        test = overlay.get_nifti_frame(seg_frame_objs, shape)
+        nifti_frames.append(test)
 
     # Convert to NIfTI
     nifti = convert_images_to_nifti_labels(nifti_frames)
