@@ -1,0 +1,86 @@
+description: |
+  Changed the testdata. See https://github.com/radoss-org/radoss-creative-commons/pull/5
+
+  We expect to see large swings in the metrics, as the testdata has been overhauled.
+current_output:
+  3dus:
+    metrics:
+    - Aca:
+      - 50.47  # Modified
+      - 61.01  # Modified
+      - 64.02  # Modified
+      - 58.5  # Modified
+    - Cen. ratio:
+      - N/A
+      - N/A
+      - N/A
+      - 0.64  # Modified
+    - Alpha:
+      - 63.56  # Modified
+      - 69.3  # Modified
+      - 54.4  # Modified
+      - 62.42  # Modified
+    - Coverage:
+      - 0.62  # Modified
+      - 0.708  # Modified
+      - 0.57
+      - 0.63  # Modified
+    - Curvature:
+      - 1.74  # Modified
+      - 1.59  # Modified
+      - 2.19  # Modified
+      - 1.84  # Modified
+    graf_frame: 4  # Modified
+    dev_metrics:
+      os_ichium_detected: true
+      no_frames_segmented: 15
+      no_frames_marked: 10
+      graf_frame: 4  # Modified
+      acetabular_mid_frame: 9  # Modified
+      fem_mid_frame: 7
+      critial_error: false
+      cr_points:
+      - 1.0  # Modified
+      - 12.0  # Modified
+      - 5.0
+      total_frames: 15
+    recorded_error: null
+    keyphrase: default_US
+  xray:
+    metrics:
+    - ace_index_left: 28.1  # Modified
+    - ace_index_right: 17.8  # Modified
+    keyphrase: default_xray
+    dev_metrics: {}
+  us_sweep:
+    metrics:
+    - alpha: 69.3  # Modified
+    - coverage: 0.708  # Modified
+    - curvature: 1.59  # Modified
+    keyphrase: default_US
+    dev_metrics:
+      os_ichium_detected: true
+      no_frames_segmented: 15
+      no_frames_marked: 10
+      graf_frame: 4  # Modified
+      acetabular_mid_frame: 9  # Modified
+      fem_mid_frame: 7
+      critial_error: false
+      cr_points: []
+      total_frames: 15
+  2dus:
+    metrics:
+    - alpha: 69.3  # Modified
+    - coverage: 0.708  # Modified
+    - curvature: 1.59  # Modified
+    keyphrase: default_US
+    dev_metrics:
+      os_ichium_detected: true
+      no_frames_segmented: 1
+      no_frames_marked: 1
+      graf_frame: null
+      acetabular_mid_frame: 0
+      fem_mid_frame: 0
+      critial_error: false
+      cr_points: []
+      total_frames: 1

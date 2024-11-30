@@ -58,6 +58,7 @@ def manual_predict_us(
     keyphrase: Union[str, Config],
     config: Config = None,
     seg: Union[str, Nifti1Image] = None,
+    seg_idx: int = 0,
 ) -> List[SegFrameObjects]:
     """
     Manual Segmentation for Hip Ultrasound.
@@ -66,6 +67,7 @@ def manual_predict_us(
     :param keyphrase: The Keyphrase or Config
     :param config: The Config
     :param seg: The Segmentation File
+    :param seg_idx: The Segmentation Index
 
     :return: The Segmentation Results
     """
@@ -80,6 +82,9 @@ def manual_predict_us(
     results, _ = convert_nifti_to_image_labels(
         seg, crop_coordinates=config.crop_coordinates
     )
+
+    if seg_idx:
+        results = results[seg_idx:]
 
     classes = {
         LabelColours.LABEL1: HipLabelsUS.IlliumAndAcetabulum,

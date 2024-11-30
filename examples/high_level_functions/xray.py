@@ -17,7 +17,7 @@ hip_data, img, dev_metrics = analyse_hip_xray_2D(
     img_raw,
     keyphrase=default_xray,
     modes_func=manual_predict_xray,
-    modes_func_kwargs_dict=labels[0],
+    modes_func_kwargs_dict=labels,
 )
 
 img.save("xray.jpg")

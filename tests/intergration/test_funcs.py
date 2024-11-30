@@ -63,7 +63,7 @@ def test_analyse_hip_xray_2D(landmarks_xray, xray_file_path, metrics_xray):
         img,
         keyphrase=default_xray,
         modes_func=manual_predict_xray,
-        modes_func_kwargs_dict={"landmark_list": [landmarks_xray]},
+        modes_func_kwargs_dict=landmarks_xray,
     )
 
     metrics = hip_data.json_dump(default_xray, dev_metrics)
@@ -73,20 +73,18 @@ def test_analyse_hip_xray_2D(landmarks_xray, xray_file_path, metrics_xray):
 
 def test_retuve_run_xray(landmarks_xray, xray_file_path, metrics_xray):
 
-    print(landmarks_xray)
-
     retuve_result = retuve_run(
         hip_mode=HipMode.XRAY,
         config=default_xray,
         modes_func=manual_predict_xray,
-        modes_func_kwargs_dict={"landmark_list": [landmarks_xray]},
+        modes_func_kwargs_dict=landmarks_xray,
         file=xray_file_path,
     )
 
     assert retuve_result.metrics == metrics_xray
 
 
-def test_analyse_hip_2DUS(us_file_path, metrics_2d_us):
+def test_analyse_hip_2DUS(us_file_path, metrics_2d_us, expected_us_metrics):
 
     seg_file = us_file_path.replace(".dcm", ".nii.gz")
     dcm = pydicom.dcmread(us_file_path)
@@ -94,10 +92,13 @@ def test_analyse_hip_2DUS(us_file_path, metrics_2d_us):
     images = convert_dicom_to_images(dcm)
 
     hip_data, _, dev_metrics = analyse_hip_2DUS(
-        images[0],
+        images[expected_us_metrics["frame_with_results"]],
         keyphrase=default_US,
         modes_func=manual_predict_us,
-        modes_func_kwargs_dict={"seg": seg_file},
+        modes_func_kwargs_dict={
+            "seg": seg_file,
+            "seg_idx": expected_us_metrics["frame_with_results"],
+        },
     )
 
     metrics = hip_data.json_dump(default_US, dev_metrics)

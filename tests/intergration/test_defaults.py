@@ -3,27 +3,27 @@ import pytest
 from retuve.defaults.manual_seg import manual_predict_us, manual_predict_us_dcm
 from retuve.hip_us.classes.enums import HipLabelsUS
 
-XRAY_FILE_PATH = "./tests/test-data/224_DDH_115.jpg"
+XRAY_FILE_PATH = "./tests/test-data/331_DDH_115.jpg"
 US_FILE_PATH = "./tests/test-data/171551.dcm"
 US_NII_FILE_PATH = "./tests/test-data/171551.nii.gz"
 
 
 def test_manual_predict_us_dcm(
-    us_dcm, config_us, results_us, us_nii_file_path, us_full_result_info
+    us_dcm, config_us, results_us, us_nii_file_path, expected_us_metrics
 ):
     new_results = manual_predict_us_dcm(
         us_dcm, config_us, seg=us_nii_file_path
     )
-    if us_full_result_info.FLIPPED:
+    if expected_us_metrics["flipped"]:
         new_results = new_results[::-1]
     illium = [
         x
-        for x in results_us[us_full_result_info.FRAME]
+        for x in results_us[expected_us_metrics["frame_with_results"]]
         if x.cls == HipLabelsUS.IlliumAndAcetabulum
     ][0]
     new_illium = [
         x
-        for x in new_results[us_full_result_info.FRAME]
+        for x in new_results[expected_us_metrics["frame_with_results"]]
         if x.cls == HipLabelsUS.IlliumAndAcetabulum
     ][0]
 
@@ -31,21 +31,21 @@ def test_manual_predict_us_dcm(
 
 
 def test_manual_predict_us(
-    us_images, config_us, us_nii_file_path, results_us, us_full_result_info
+    us_images, config_us, us_nii_file_path, results_us, expected_us_metrics
 ):
     new_results = manual_predict_us(us_images, config_us, seg=us_nii_file_path)
-    if us_full_result_info.FLIPPED:
+    if expected_us_metrics["flipped"]:
         new_results = new_results[::-1]
     assert results_us is not None
     illium = [
         x
-        for x in results_us[us_full_result_info.FRAME]
+        for x in results_us[expected_us_metrics["frame_with_results"]]
         if x.cls == HipLabelsUS.IlliumAndAcetabulum
     ]
     illium = illium[0]
     new_illium = [
         x
-        for x in new_results[us_full_result_info.FRAME]
+        for x in new_results[expected_us_metrics["frame_with_results"]]
         if x.cls == HipLabelsUS.IlliumAndAcetabulum
     ][0]
 

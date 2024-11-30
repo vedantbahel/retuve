@@ -69,7 +69,7 @@ with gzip.open("./tests/test-data/pre_edited_landmarks.pkl.gz", "rb") as f:
     data_pre_edited_landmarks = pickle.load(f)
 
 
-with open(f"tests/test-data/224_DDH_115.json", "r") as f:
+with open(f"tests/test-data/331_DDH_115.json", "r") as f:
     json_xray_landmarks = f.read()
 
 
@@ -127,20 +127,24 @@ def landmarks_us() -> List[LandmarksUS]:
 
 
 @pytest.fixture
-def hip_data_us_0(us_full_result_info) -> HipDatasUS:
-    return copy.deepcopy(data_hip_datas[us_full_result_info.FRAME])
+def hip_data_us_0(expected_us_metrics) -> HipDatasUS:
+    return copy.deepcopy(
+        data_hip_datas[expected_us_metrics["frame_with_results"]]
+    )
 
 
 @pytest.fixture
-def results_us_0(us_full_result_info) -> SegFrameObjects:
-    return copy.deepcopy(data_results[us_full_result_info.FRAME])
+def results_us_0(expected_us_metrics) -> SegFrameObjects:
+    return copy.deepcopy(
+        data_results[expected_us_metrics["frame_with_results"]]
+    )
 
 
 @pytest.fixture
-def illium_0(us_full_result_info) -> SegObject:
+def illium_0(expected_us_metrics) -> SegObject:
     illium_obj = [
         seg_obj
-        for seg_obj in data_results[us_full_result_info.FRAME]
+        for seg_obj in data_results[expected_us_metrics["frame_with_results"]]
         if seg_obj.cls == HipLabelsUS.IlliumAndAcetabulum
     ][0]
 
@@ -148,10 +152,10 @@ def illium_0(us_full_result_info) -> SegObject:
 
 
 @pytest.fixture
-def femoral_0(us_full_result_info) -> SegObject:
+def femoral_0(expected_us_metrics) -> SegObject:
     femoral_obj = [
         seg_obj
-        for seg_obj in data_results[us_full_result_info.FRAME]
+        for seg_obj in data_results[expected_us_metrics["frame_with_results"]]
         if seg_obj.cls == HipLabelsUS.FemoralHead
     ][0]
 
@@ -159,8 +163,10 @@ def femoral_0(us_full_result_info) -> SegObject:
 
 
 @pytest.fixture
-def landmarks_us_0(us_full_result_info) -> LandmarksUS:
-    return copy.deepcopy(data_hip_datas[us_full_result_info.FRAME].landmarks)
+def landmarks_us_0(expected_us_metrics) -> LandmarksUS:
+    return copy.deepcopy(
+        data_hip_datas[expected_us_metrics["frame_with_results"]]
+    ).landmarks
 
 
 @pytest.fixture
@@ -259,7 +265,7 @@ def img_shape_xray(seg_results_xray) -> tuple:
 
 @pytest.fixture
 def landmarks_xray():
-    return json.loads(json_xray_landmarks)[0]["landmark_list"][0]
+    return json.loads(json_xray_landmarks)
 
 
 pytest_plugins = [
