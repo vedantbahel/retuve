@@ -7,7 +7,7 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.13"
-radstract = { git = "https://github.com/radoss-org/Radstract.git" }
+radstract = { git = "https://github.com/radoss-org/radstract.git" }
 fire = "^0.5.0"
 moviepy = "^1.0.3"
 plotly = "^5.18.0"
