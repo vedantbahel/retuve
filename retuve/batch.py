@@ -78,7 +78,7 @@ def run_single(
         if retuve_result.image is not None:
             retuve_result.image.save(f"{savedir}/{fileid}{Outputs.IMAGE}")
 
-        if retuve_result.metrics["dev_metrics"]:
+        if retuve_result.metrics and retuve_result.metrics.get("dev_metrics"):
             ulogger.info(
                 "\n Dev Metrics: ", retuve_result.metrics["dev_metrics"]
             )
