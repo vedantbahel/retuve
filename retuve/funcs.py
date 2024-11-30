@@ -24,10 +24,8 @@ from retuve.hip_us.handlers.side import set_side
 from retuve.hip_us.metrics.dev import get_dev_metrics
 from retuve.hip_us.modes.landmarks import landmarks_2_metrics_us
 from retuve.hip_us.modes.seg import pre_process_segs_us, segs_2_landmarks_us
-from retuve.hip_us.multiframe import (
-    find_graf_plane,
-    get_3d_metrics_and_visuals,
-)
+from retuve.hip_us.multiframe import (find_graf_plane,
+                                      get_3d_metrics_and_visuals)
 from retuve.hip_xray.classes import DevMetricsXRay, HipDataXray, LandmarksXRay
 from retuve.hip_xray.draw import draw_hips_xray
 from retuve.hip_xray.landmarks import landmarks_2_metrics_xray
@@ -49,12 +47,14 @@ def get_fps(no_of_frames: int, min_fps=30, min_vid_length=6) -> int:
 
     :return: The frames per second.
     """
-    return (
+
+    fps = (
         min_fps
         if no_of_frames > (min_fps * min_vid_length)
         else no_of_frames // min_vid_length
     )
 
+    return fps if fps > 0 else 1
 
 def process_landmarks_xray(
     config: Config,
@@ -292,13 +292,15 @@ def analyse_hip_3DUS(
 
     ulogger.info(f"Total 3DUS time: {time.time() - start:.2f}s")
 
+    fps = get_fps(
+        len(image_arrays),
+        config.visuals.min_vid_fps,
+        config.visuals.min_vid_length,
+    )
+
     video_clip = ImageSequenceClip(
         image_arrays,
-        fps=get_fps(
-            len(image_arrays),
-            config.visuals.min_vid_fps,
-            config.visuals.min_vid_length,
-        ),
+        fps=fps,
     )
 
     if config.test_data_passthrough:
