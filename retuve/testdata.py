@@ -24,6 +24,6 @@ class Cases(Enum):
     ]
 
     XRAY_JPG = [
-        f"{URL}/other/xray/224_DDH_115.jpg",
-        f"{URL}/labels/xray/224_DDH_115.json",
+        f"{URL}/other/xray/331_DDH_115.jpg",
+        f"{URL}/labels/xray/331_DDH_115.json",
     ]

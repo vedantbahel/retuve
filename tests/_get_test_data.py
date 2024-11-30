@@ -136,7 +136,7 @@ hip_data, img, dev_metrics = analyse_hip_xray_2D(
     img_raw,
     keyphrase=default_xray,
     modes_func=manual_predict_xray,
-    modes_func_kwargs_dict=labels[0],
+    modes_func_kwargs_dict=labels,
 )
 
 # Save json
@@ -158,23 +158,31 @@ with gzip.open(f"{test_data_dir}/seg_results_xray.pkl.gz", "wb") as f:
 
 # Get jsons for 2DSW and 2D
 
-hip_datas, _, dev_metrics, _ = analyse_hip_2DUS_sweep(
+hip_datas, img, dev_metrics, _ = analyse_hip_2DUS_sweep(
     dcm=dcm,
     keyphrase=default_US,
     modes_func=manual_predict_us_dcm,
     modes_func_kwargs_dict={"seg": seg_file},
 )
 
+# save 2d image
+img.save(f"{test_data_dir}/img_2dus_sweep.jpg")
+
 json_file_us_sweep = hip_datas.json_dump(default_US, dev_metrics)
 
 images = convert_dicom_to_images(dcm)
 
-hip_data, _, dev_metrics = analyse_hip_2DUS(
-    img=images[0],
+FRAME = 4
+
+hip_data, img, dev_metrics = analyse_hip_2DUS(
+    img=images[FRAME],
     keyphrase=default_US,
     modes_func=manual_predict_us,
-    modes_func_kwargs_dict={"seg": seg_file},
+    modes_func_kwargs_dict={"seg": seg_file, "seg_idx": FRAME},
 )
+
+# save 2d image
+img.save(f"{test_data_dir}/img_2dus.jpg")
 
 json_file_us = hip_data.json_dump(default_US, dev_metrics)
 
@@ -306,6 +314,12 @@ if previous_data is None or has_changes(
         "You have made changes to the output of Retuve. "
         "Please ensure these changes are intended \nand either minor, "
         "or making meaningful clinical improvements."
+    )
+
+    print(
+        "\nSome values from the test-data need to be sey manually. "
+        "If tests are failing, please check expected_us_metrics "
+        "in ./tests/fixtures/unit.py"
     )
 else:
     print("No changes detected; no new release note created.")
