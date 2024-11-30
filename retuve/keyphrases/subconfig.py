@@ -40,6 +40,7 @@ class HipConfig:
         display_fem_guess: bool,
         draw_side_metainfo: bool,
         allow_flipping: bool,
+        display_bad_frame_reasons: bool,
     ):
         """
         The Hip Subconfig.
@@ -58,6 +59,7 @@ class HipConfig:
         :param display_fem_guess (bool): Display the femoral guess.
         :param draw_side_metainfo (bool): Draw the side metainfo.
         :param allow_flipping (bool): Allow use of the 3D US Orientaition Algorithm.
+        :param display_bad_frame_reasons (bool): Display the bad frame reasons.
         """
         self.midline_color = midline_color
         self.aca_split = aca_split
@@ -73,6 +75,7 @@ class HipConfig:
         self.display_fem_guess = display_fem_guess
         self.draw_side_metainfo = draw_side_metainfo
         self.allow_flipping = allow_flipping
+        self.display_bad_frame_reasons = display_bad_frame_reasons
 
 
 class TrakConfig:

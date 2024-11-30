@@ -3445,7 +3445,7 @@ vulture = "^2.11"
 type = "git"
 url = "https://github.com/radoss-org/Radstract.git"
 reference = "HEAD"
-resolved_reference = "c17b9a94ceefd12a860ccbb83c344be344a1d5e8"
+resolved_reference = "ef0839c88c01cc210bf18d34dae52c58d5245c6b"
 
 [[package]]
 name = "referencing"

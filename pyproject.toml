@@ -41,6 +41,10 @@ priority = "explicit"
 name = "PyPI"
 priority = "primary"
 
+[tool.coverage.run]
+# Specify the directory and filename for the coverage data
+data_file = "tests/.coverage"
+
 [tool.poe.tasks]
 # Under BSD: https://www.creatis.insa-lyon.fr/software/public/Gdcm/License.html
 license = "licensecheck --ignore-packages=gdcm"

@@ -102,6 +102,8 @@ def handle_bad_frames(hip_datas: HipDatasUS, config: Config) -> HipDatasUS:
     """
     keep = remove_outliers(hip_datas, config)
 
+    bad_frame_reasons = {}
+
     for i, hip in enumerate(hip_datas):
 
         empty_hip = HipDataUS(
@@ -110,24 +112,30 @@ def handle_bad_frames(hip_datas: HipDatasUS, config: Config) -> HipDatasUS:
 
         if not keep[i]:
             hip_datas[i] = empty_hip
+            bad_frame_reasons[i] = "No Segs/Outlier"
             continue
 
         if (not hip.metrics) or all(
             metric.value == 0 for metric in hip.metrics
         ):
             hip_datas[i] = empty_hip
+            bad_frame_reasons[i] = "No Metrics"
             continue
 
         if hip.landmarks is None:
             hip_datas[i] = empty_hip
+            bad_frame_reasons[i] = "No Landmarks"
             continue
 
         if bad_alpha(hip) or not left_apex_line_flat(hip):
             hip_datas[i] = empty_hip
+            bad_frame_reasons[i] = "Bad Alpha/Line not Flat"
             continue
 
         if apex_right_points_too_close(hip):
             hip_datas[i] = empty_hip
+            bad_frame_reasons[i] = "Apex and Right Too Close"
             continue
 
+    hip_datas.bad_frame_reasons = bad_frame_reasons
     return hip_datas

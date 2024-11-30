@@ -62,11 +62,12 @@ hip = HipConfig(
     ],
     z_gap=2.5,
     display_frame_no=True,
-    display_side=True,
+    display_side=False,
     draw_midline=False,
     display_fem_guess=False,
     draw_side_metainfo=False,
     allow_flipping=True,
+    display_bad_frame_reasons=False,
 )
 
 trak = TrakConfig(

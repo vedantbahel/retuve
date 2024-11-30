@@ -24,8 +24,10 @@ from retuve.hip_us.handlers.side import set_side
 from retuve.hip_us.metrics.dev import get_dev_metrics
 from retuve.hip_us.modes.landmarks import landmarks_2_metrics_us
 from retuve.hip_us.modes.seg import pre_process_segs_us, segs_2_landmarks_us
-from retuve.hip_us.multiframe import (find_graf_plane,
-                                      get_3d_metrics_and_visuals)
+from retuve.hip_us.multiframe import (
+    find_graf_plane,
+    get_3d_metrics_and_visuals,
+)
 from retuve.hip_xray.classes import DevMetricsXRay, HipDataXray, LandmarksXRay
 from retuve.hip_xray.draw import draw_hips_xray
 from retuve.hip_xray.landmarks import landmarks_2_metrics_xray
@@ -183,13 +185,17 @@ def analyze_synthetic_xray(
     images = convert_dicom_to_images(dcm)
     nifti_frames = []
 
-    if config.operation_type in OperationType.LANDMARK:
-        landmark_results, seg_results = modes_func(
-            images, keyphrase, **modes_func_kwargs_dict
-        )
-        hip_datas, image_arrays = process_landmarks_xray(
-            config, landmark_results, seg_results
-        )
+    try:
+        if config.operation_type in OperationType.LANDMARK:
+            landmark_results, seg_results = modes_func(
+                images, keyphrase, **modes_func_kwargs_dict
+            )
+            hip_datas, image_arrays = process_landmarks_xray(
+                config, landmark_results, seg_results
+            )
+    except Exception as e:
+        ulogger.error(f"Critical Error: {e}")
+        return None
 
     for hip, seg_frame_objs in zip(hip_datas, seg_results):
         shape = seg_frame_objs.img.shape
@@ -237,14 +243,18 @@ def analyse_hip_3DUS(
     if file_id:
         del modes_func_kwargs_dict["file_id"]
 
-    if config.operation_type == OperationType.SEG:
-        hip_datas, results, shape = process_segs_us(
-            config, dcm, modes_func, modes_func_kwargs_dict
-        )
-    elif config.operation_type == OperationType.LANDMARK:
-        raise NotImplementedError(
-            "This is not yet supported. Please use the seg operation type."
-        )
+    try:
+        if config.operation_type == OperationType.SEG:
+            hip_datas, results, shape = process_segs_us(
+                config, dcm, modes_func, modes_func_kwargs_dict
+            )
+        elif config.operation_type == OperationType.LANDMARK:
+            raise NotImplementedError(
+                "This is not yet supported. Please use the seg operation type."
+            )
+    except Exception as e:
+        ulogger.error(f"Critical Error: {e}")
+        return None, None, None, None
 
     hip_datas = handle_bad_frames(hip_datas, config)
 
@@ -329,10 +339,14 @@ def analyse_hip_2DUS(
     """
     config = Config.get_config(keyphrase)
 
-    if config.operation_type in OperationType.SEG:
-        hip_datas, results, _ = process_segs_us(
-            config, [img], modes_func, modes_func_kwargs_dict
-        )
+    try:
+        if config.operation_type in OperationType.SEG:
+            hip_datas, results, _ = process_segs_us(
+                config, [img], modes_func, modes_func_kwargs_dict
+            )
+    except Exception as e:
+        ulogger.error(f"Critical Error: {e}")
+        return None, None, None
 
     image_arrays, _ = draw_hips_us(hip_datas, results, None, config)
 
@@ -355,7 +369,7 @@ def analyse_hip_2DUS_sweep(
     ],
     modes_func_kwargs_dict: Dict[str, Any],
 ) -> Tuple[
-    HipDatasUS,
+    HipDataUS,
     Image.Image,
     DevMetricsUS,
     ImageSequenceClip,
@@ -374,39 +388,51 @@ def analyse_hip_2DUS_sweep(
     config = Config.get_config(keyphrase)
     hip_datas = HipDatasUS()
 
-    if config.operation_type == OperationType.SEG:
-        hip_datas, results, shape = process_segs_us(
-            config, dcm, modes_func, modes_func_kwargs_dict
-        )
-    elif config.operation_type == OperationType.LANDMARK:
-        raise NotImplementedError(
-            "This is not yet supported. Please use the seg operation type."
-        )
+    try:
+        if config.operation_type == OperationType.SEG:
+            hip_datas, results, shape = process_segs_us(
+                config, dcm, modes_func, modes_func_kwargs_dict
+            )
+        elif config.operation_type == OperationType.LANDMARK:
+            raise NotImplementedError(
+                "This is not yet supported. Please use the seg operation type."
+            )
+    except Exception as e:
+        ulogger.error(f"Critical Error: {e}")
+        return None, None, None, None
 
     hip_datas = handle_bad_frames(hip_datas, config)
     hip_datas = find_graf_plane(hip_datas, results)
 
-    hip = hip_datas.grafs_hip
-    frame = hip_datas.graf_frame
+    graf_hip = hip_datas.grafs_hip
+    graf_frame = hip_datas.graf_frame
 
     image_arrays, _ = draw_hips_us(hip_datas, results, None, config)
 
     hip_datas = get_dev_metrics(hip_datas, results, config)
 
-    image = image_arrays[frame]
-    hip = hip_datas[frame]
+    if graf_frame is not None:
+        graf_image = image_arrays[graf_frame]
+        graf_image = Image.fromarray(graf_image)
 
-    image = Image.fromarray(image)
+        image_arrays = (
+            [image_arrays[graf_frame]] * int(len(image_arrays) * 0.1)
+            + image_arrays
+            + [image_arrays[graf_frame]] * int(len(image_arrays) * 0.1)
+        )
+    else:
+        graf_image = None
 
     video_clip = ImageSequenceClip(
-        image_arrays, fps=get_fps(
+        image_arrays,
+        fps=get_fps(
             len(image_arrays),
             config.visuals.min_vid_fps,
             config.visuals.min_vid_length,
         ),
     )
 
-    return hip, image, hip_datas.dev_metrics, video_clip
+    return graf_hip, graf_image, hip_datas.dev_metrics, video_clip
 
 
 class RetuveResult:
@@ -496,8 +522,12 @@ def retuve_run(
         hip, image, dev_metrics, video_clip = analyse_hip_2DUS_sweep(
             file, config, modes_func, modes_func_kwargs_dict
         )
+        json_dump = None
+        if hip:
+            json_dump = hip.json_dump(config, dev_metrics)
+
         return RetuveResult(
-            hip.json_dump(config, dev_metrics),
+            json_dump,
             hip=hip,
             image=image,
             video_clip=video_clip,
