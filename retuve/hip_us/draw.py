@@ -113,9 +113,8 @@ def draw_hips_us(
             config,
         )
 
-        if (
-            config.hip.display_bad_frame_reasons
-            and hip_datas.bad_frame_reasons
+        if config.hip.display_bad_frame_reasons and hasattr(
+            hip_datas, "bad_frame_reasons"
         ):
             if hip.frame_no in hip_datas.bad_frame_reasons:
                 overlay.draw_text(

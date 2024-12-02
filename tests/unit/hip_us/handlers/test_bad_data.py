@@ -15,10 +15,9 @@ def test_remove_outliers(edited_hips, expected_us_metrics):
     ), f"Outliers not removed correctly {keep}"
 
 
-def test_handle_bad_frames(edited_hips, expected_us_metrics):
-    config = {}  # Sample config
+def test_handle_bad_frames(edited_hips, expected_us_metrics, config_us):
 
-    result = handle_bad_frames(edited_hips, config)
+    result = handle_bad_frames(edited_hips, config_us)
 
     idx_results = expected_us_metrics["frame_with_results"]
     idx_no_results = expected_us_metrics["frame_with_no_results"]
