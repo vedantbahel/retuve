@@ -9,6 +9,7 @@ import numpy as np
 from retuve.hip_us.classes.general import HipDatasUS, HipDataUS
 from retuve.hip_us.metrics.alpha import bad_alpha
 from retuve.keyphrases.config import Config
+from retuve.keyphrases.enums import HipMode
 
 
 def remove_outliers(hip_datas: HipDatasUS, config: Config) -> List[bool]:
@@ -100,7 +101,11 @@ def handle_bad_frames(hip_datas: HipDatasUS, config: Config) -> HipDatasUS:
 
     :return: HipDatasUS object.
     """
-    keep = remove_outliers(hip_datas, config)
+
+    if config.batch.hip_mode == HipMode.US2DSW:
+        keep = [(True if hip.marked() else False) for hip in hip_datas]
+    else:
+        keep = remove_outliers(hip_datas, config)
 
     bad_frame_reasons = {}
 
@@ -112,7 +117,10 @@ def handle_bad_frames(hip_datas: HipDatasUS, config: Config) -> HipDatasUS:
 
         if not keep[i]:
             hip_datas[i] = empty_hip
-            bad_frame_reasons[i] = "No Segs/Outlier"
+            if config.batch.hip_mode == HipMode.US2DSW:
+                bad_frame_reasons[i] = "Not Marked"
+            else:
+                bad_frame_reasons[i] = "Not Marked/Outlier"
             continue
 
         if (not hip.metrics) or all(

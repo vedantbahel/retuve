@@ -15,8 +15,12 @@ from radstract.data.nifti import NIFTI, convert_images_to_nifti_labels
 
 from retuve.classes.draw import Overlay
 from retuve.classes.seg import SegFrameObjects
-from retuve.draw import (TARGET_SIZE, draw_landmarks, draw_seg,
-                         resize_data_for_display)
+from retuve.draw import (
+    TARGET_SIZE,
+    draw_landmarks,
+    draw_seg,
+    resize_data_for_display,
+)
 from retuve.hip_us.classes.enums import Side
 from retuve.hip_us.classes.general import HipDatasUS, HipDataUS
 from retuve.hip_us.handlers.side import get_side_metainfo
@@ -109,11 +113,14 @@ def draw_hips_us(
             config,
         )
 
-        if config.hip.display_bad_frame_reasons:
+        if (
+            config.hip.display_bad_frame_reasons
+            and hip_datas.bad_frame_reasons
+        ):
             if hip.frame_no in hip_datas.bad_frame_reasons:
                 overlay.draw_text(
                     hip_datas.bad_frame_reasons[hip.frame_no],
-                    final_image.shape[1]//2,
+                    final_image.shape[1] // 2,
                     final_image.shape[0] - 100,
                     header="h2",
                 )
