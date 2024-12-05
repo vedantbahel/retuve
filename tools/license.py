@@ -52,11 +52,11 @@ def process_directory(directory):
                 add_license_to_file(filepath)
 
 if __name__ == "__main__":
-    # Specify the directory to process
-    target_directory = "./retuve"
+    target_directories = ["./radstract", "./examples", "./tests"]
 
-    if os.path.isdir(target_directory):
-        process_directory(target_directory)
-        print("Processing completed.")
-    else:
-        print(f"Invalid directory: {target_directory}")
+    for target_directory in target_directories:
+        if os.path.isdir(target_directory):
+            process_directory(target_directory)
+            print("Processing completed.")
+        else:
+            print(f"Invalid directory: {target_directory}")
