@@ -44,7 +44,7 @@ router = APIRouter()
         500: {"description": "Internal Server Error"},
     },
 )
-async def analyse_image(
+def analyse_image(
     request: Request,
     file: UploadFile = File(...),
     keyphrase: str = Form(...),

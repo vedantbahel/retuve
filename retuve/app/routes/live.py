@@ -17,6 +17,7 @@ The API for Retuve Live
 """
 
 import logging
+import asyncio
 import traceback
 from datetime import datetime
 
@@ -34,7 +35,6 @@ router = APIRouter()
 
 logging.getLogger("httpx").setLevel(logging.CRITICAL)
 
-
 class NoDicomFoundError(Exception):
     pass
 
@@ -43,11 +43,13 @@ class NoDicomFoundError(Exception):
     "/api/live/",
     response_model=ModelResponse,
     responses={
+        204: {"description": "No Content - Retuve Run likely to be in progress."},
         400: {"description": "Invalid file type. Expected a DICOM file."},
+        422: {"description": "No DICOM images found on the Orthanc server."},
         500: {"description": "Internal Server Error"},
     },
 )
-async def analyse_image(
+async def analyse_image_nidus_tools(
     request: Request,
     keyphrase: str = Form(...),
 ):
@@ -67,14 +69,10 @@ async def analyse_image(
         try:
             # Usage example:
             latest_dicom, instance_id = await get_latest_dicom_image(
-                "http://localhost:8042", "orthanc", "orthanc"
+                "http://localhost:8042"
             )
 
         except Exception as e:
-            # Log error
-            hippa_logger.error(
-                f"{keyphrase} failed to process due to: {str(e)}"
-            )
             raise NoDicomFoundError(
                 "No DICOM images found on the Orthanc server."
             )
@@ -84,19 +82,21 @@ async def analyse_image(
             f.write(latest_dicom)
 
         if request.app.instance_id_cache == instance_id:
+            if not request.app.model_response_cache:
+                raise HTTPException(
+                    status_code=204,
+                )
+
             return request.app.model_response_cache
 
         request.app.instance_id_cache = instance_id
 
-        # if config does not have mode_func_kwargs_dict, set it to empty dict
-        if not hasattr(config.batch, "mode_func_kwargs_dict"):
-            config.batch.mode_func_kwargs_dict = {}
-
-        result = retuve_run(
+        result = await asyncio.to_thread(
+            retuve_run,
             hip_mode=config.batch.hip_mode,
             config=config,
             modes_func=config.batch.mode_func,
-            modes_func_kwargs_dict=config.batch.mode_func_kwargs_dict,
+            modes_func_kwargs_dict={},
             file=f"{TMP_RESULTS_DIR}/{instance_id}.dcm",
         )
 
@@ -109,10 +109,19 @@ async def analyse_image(
 
         if result.video_clip:
             video_path = f"{TMP_RESULTS_DIR}/{instance_id}.mp4"
-            result.video_clip.write_videofile(video_path)
-            video_path = video_path.replace(
-                TMP_RESULTS_DIR, TMP_RESULTS_URL_ACCESS
-            )
+            await asyncio.to_thread(result.video_clip.write_videofile, video_path)
+            video_path = video_path.replace(TMP_RESULTS_DIR, TMP_RESULTS_URL_ACCESS)
+
+        if result.visual_3d:
+            figure_path = f"{TMP_RESULTS_DIR}/{instance_id}.html"
+            await asyncio.to_thread(result.visual_3d.write_html, figure_path)
+            figure_path = figure_path.replace(TMP_RESULTS_DIR, TMP_RESULTS_URL_ACCESS)
+
+        if result.image:
+            img_path = f"{TMP_RESULTS_DIR}/{instance_id}.jpg"
+            await asyncio.to_thread(result.image.save, img_path)
+            img_path = img_path.replace(TMP_RESULTS_DIR, TMP_RESULTS_URL_ACCESS)
+
 
         if result.visual_3d:
             figure_path = f"{TMP_RESULTS_DIR}/{instance_id}.html"
@@ -165,12 +174,22 @@ async def analyse_image(
             metrics_2d=metrics2d,
         )
 
-        # Mock response for demonstration
+        # check if there is a valid response, otherwise raise a 500 error
+        if not request.app.model_response_cache:
+            raise HTTPException(
+                status_code=500, detail="Internal Server Error, check logs."
+            )
+
         return request.app.model_response_cache
 
     except NoDicomFoundError as e:
         # raise a 422 error
         raise HTTPException(status_code=422, detail=str(e))
+
+    except HTTPException as http_exc:
+        # Allow expected HTTP exceptions to pass through without wrapping in a 500
+        raise http_exc
+
 
     except Exception as e:
         # print traceback to hippa logs
