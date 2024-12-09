@@ -163,6 +163,11 @@ class APIConfig:
         hippa_logging_file: str,
         api_token: str,
         origins: List[str],
+        zero_trust: bool,
+        zero_trust_interval: int,
+        orthanc_url: str,
+        orthanc_username: str,
+        orthanc_password: str,
     ):
         """
         Initialize APIConfig.
@@ -174,6 +179,11 @@ class APIConfig:
         :param hippa_logging_file (str): The logging file for HIPPA related logs.
         :param api_token (str): The api token.
         :param origins (list): The origins to allow.
+        :param zero_trust (bool): Zero trust mode.
+        :param zero_trust_interval (int): The zero trust interval.
+        :param orthanc_url (str): The orthanc url.
+        :param orthanc_username (str): The orthanc username.
+        :param orthanc_password (str): The orthanc password.
         """
         self.savedir = savedir
         self.url = url
@@ -182,6 +192,11 @@ class APIConfig:
         self.hippa_logging_file = hippa_logging_file
         self.api_token = api_token
         self.origins = origins
+        self.zero_trust = zero_trust
+        self.zero_trust_interval = zero_trust_interval
+        self.orthanc_url = orthanc_url
+        self.orthanc_username = orthanc_username
+        self.orthanc_password = orthanc_password
 
 
 class VisualsConfig:

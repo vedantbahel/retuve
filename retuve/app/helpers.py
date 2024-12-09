@@ -16,6 +16,7 @@
 Helper Functions for launching the Retuve Web App
 """
 
+import asyncio
 import importlib
 import logging
 import os
@@ -34,10 +35,10 @@ from retuve.typehints import GeneralModeFuncType
 from retuve.utils import RETUVE_DIR, register_config_dirs
 
 # create a temp dir
-TMP_RESULTS_DIR = f"/tmp/retuve_api_results/"
+RESULTS_DIR = f"/tmp/retuve_api_results/"
 
 API_RESULTS_URL_ACCESS = "api_results"
-TMP_RESULTS_URL_ACCESS = "/results"
+RESULTS_URL_ACCESS = "/results"
 
 web_templates = Jinja2Templates(directory=f"{RETUVE_DIR}/app/static")
 
@@ -48,10 +49,16 @@ class AppConfigInfo:
     """
 
     def __init__(
-        self, mode_func: GeneralModeFuncType, hippa_logger: logging.Logger
+        self,
+        mode_func: GeneralModeFuncType,
+        hippa_logger: logging.Logger,
+        zero_trust: bool,
+        zero_trust_interval: int = 0,
     ):
         self.mode_func = mode_func
         self.hippa_logger = hippa_logger
+        self.zero_trust = zero_trust
+        self.zero_trust_interval = zero_trust_interval
 
 
 def app_init(app: fastapi.FastAPI):
@@ -66,18 +73,31 @@ def app_init(app: fastapi.FastAPI):
     app.model_response_cache = None
     origins = []
 
+    hippa_logger_cache = {}
+
     for _, config in Config.get_configs():
         # create batch and results dirs if they don't exist
-        register_config_dirs(config, other_dirs=[TMP_RESULTS_DIR])
+        register_config_dirs(config, other_dirs=[RESULTS_DIR])
 
         database_init(config.api.db_path)
 
         # mount the video file
-        app.mount(
-            TMP_RESULTS_URL_ACCESS,
-            StaticFiles(directory=TMP_RESULTS_DIR),
-            name="results",
-        )
+        if config.api.zero_trust:
+            app.mount(
+                f"{RESULTS_URL_ACCESS}/{config.name}",
+                StaticFiles(directory=RESULTS_DIR),
+                name="results",
+            )
+        else:
+            app.mount(
+                f"{RESULTS_URL_ACCESS}/{config.name}",
+                StaticFiles(
+                    directory=config.api.savedir,
+                    html=True,
+                ),
+                name="results",
+            )
+
         app.mount(
             f"/{API_RESULTS_URL_ACCESS}/{config.name}",
             StaticFiles(directory=config.api.savedir),
@@ -96,18 +116,26 @@ def app_init(app: fastapi.FastAPI):
 
         origins.extend(config.api.origins)
 
-        hippa_logger = logging.getLogger("hippa")
-        hippa_logger.setLevel(logging.INFO)
-        handler = logging.FileHandler(config.api.hippa_logging_file)
-        formatter = logging.Formatter(
-            "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-        )
-        handler.setFormatter(formatter)
-        hippa_logger.addHandler(handler)
+        if config.api.hippa_logging_file in hippa_logger_cache:
+            hippa_logger = hippa_logger_cache[config.api.hippa_logging_file]
+
+        else:
+            hippa_logger = logging.getLogger("hippa")
+            hippa_logger.setLevel(logging.INFO)
+            handler = logging.FileHandler(config.api.hippa_logging_file)
+            formatter = logging.Formatter(
+                "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+            )
+            handler.setFormatter(formatter)
+            hippa_logger.addHandler(handler)
+
+            hippa_logger_cache[config.api.hippa_logging_file] = hippa_logger
 
         app.config[config.name] = AppConfigInfo(
             mode_func=mode_func,
             hippa_logger=hippa_logger,
+            zero_trust=config.api.zero_trust,
+            zero_trust_interval=config.api.zero_trust_interval,
         )
 
     app.add_middleware(
@@ -117,6 +145,9 @@ def app_init(app: fastapi.FastAPI):
         allow_methods=["*"],
         allow_headers=["*"],
     )
+
+    # For Live
+    app.latest_time = None
 
 
 def analyze_validation(file: File, keyphrase: str, api_token: str):
