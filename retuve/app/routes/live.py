@@ -49,7 +49,7 @@ class NoDicomFoundError(Exception):
         500: {"description": "Internal Server Error"},
     },
 )
-async def analyse_image_nidus_tools(
+async def analyse_image(
     request: Request,
     keyphrase: str = Form(...),
 ):
@@ -69,7 +69,7 @@ async def analyse_image_nidus_tools(
         try:
             # Usage example:
             latest_dicom, instance_id = await get_latest_dicom_image(
-                "http://localhost:8042"
+                "http://localhost:8042", "orthanc", "orthanc"
             )
 
         except Exception as e:
