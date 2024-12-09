@@ -20,22 +20,10 @@ import torch
 from radstract.data.dicom import DicomTypes
 
 from retuve.keyphrases.config import Config
-from retuve.keyphrases.enums import (
-    ACASplit,
-    Colors,
-    CRFem,
-    Curvature,
-    MetricUS,
-    MidLineMove,
-    OperationType,
-)
-from retuve.keyphrases.subconfig import (
-    APIConfig,
-    BatchConfig,
-    HipConfig,
-    TrakConfig,
-    VisualsConfig,
-)
+from retuve.keyphrases.enums import (ACASplit, Colors, CRFem, Curvature,
+                                     MetricUS, MidLineMove, OperationType)
+from retuve.keyphrases.subconfig import (APIConfig, BatchConfig, HipConfig,
+                                         TrakConfig, VisualsConfig)
 
 visuals = VisualsConfig(
     font_h1=None,
@@ -98,6 +86,11 @@ api = APIConfig(
     hippa_logging_file="hippa.log",
     api_token=None,
     origins=["http://localhost:8000"],
+    zero_trust=True,
+    zero_trust_interval=300,
+    orthanc_url="http://localhost:8042",
+    orthanc_username="orthanc",
+    orthanc_password="orthanc",
 )
 
 batch = BatchConfig(

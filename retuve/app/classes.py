@@ -72,6 +72,12 @@ class ModelResponse(BaseModel):
     keyphrase_name: str
 
 
+class LiveResponse(BaseModel):
+    file_id: str
+    video_url: str
+    img_url: str
+
+
 class File(BaseModel):
     """
     The details attached to any file analyzed by Retuve.

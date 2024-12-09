@@ -46,6 +46,7 @@ def register_config_dirs(config, other_dirs=[]):
 
     dirs.extend(other_dirs)
     dirs.extend(config.trak.datasets)
+    dirs.extend(config.batch.datasets)
 
     for dir in dirs:
         if dir and not os.path.exists(dir):

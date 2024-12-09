@@ -15,13 +15,69 @@
         padding: 0;
     }
 
-    #video-container {
-        margin-top: 50px;
+    .content-viewer {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        /* Define column sizing */
+        gap: 10px;
+        overflow-y: auto;
+        background-color: #f5f5f5;
+        padding: 10px;
     }
 
-    video {
-        width: 80%;
-        max-width: 600px;
+    .viewer {
+        flex: 0 0 auto;
+        /* Allow the panels to resize based on content */
+        min-width: auto;
+        min-height: auto;
+        max-width: 700px;
+        width: auto;
+        /* Automatically adjust width */
+        height: auto;
+        /* Automatically adjust height */
+        border: 1px solid #ccc;
+        padding: 10px;
+        background: #fff;
+        box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
+        resize: both;
+        overflow: auto;
+        /* Hidden by default */
+        aspect-ratio: 1;
+    }
+
+    video,
+    img {
+        max-width: 100%;
+        max-height: 100%;
+        display: block;
+    }
+
+    #current-file {
+        margin-left: 50px;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    table,
+    th,
+    td {
+        border: 1px solid #ddd;
+    }
+
+    th,
+    td {
+        padding: 8px;
+        text-align: left;
+    }
+
+    @media (max-width: 768px) {
+        .viewer {
+            flex: 1 1 100%;
+            min-width: auto;
+        }
     }
 </style>
 </head>
@@ -29,16 +85,35 @@
 <body>
     <header>Retuve</header>
     <h1>Retuve Model Analysis Results</h1>
-    <div id="video-container">
-        <video id="result-video" controls>
-            Your browser does not support the video tag.
-        </video>
+    <div class="container">
+        <div class="content-viewer">
+
+            <div id="video-panel" class="viewer">
+                <video id="video-player" controls></video>
+            </div>
+            <div id="image-panel" class="viewer">
+                <img id="img-view" alt="Image View" />
+            </div>
+            <div id="metrics-panel" class="viewer">
+                <table id="metrics-table">
+                    <!-- Table will be populated dynamically -->
+                </table>
+            </div>
+        </div>
     </div>
     <footer>&copy; 2024 Adam McArthur</footer>
 
 
     <script>
+        var keyphrase = '{{ keyphrase }}';
+        var url = '{{ url }}';
+
+        let isPolling = false;
+
         async function pollApi() {
+            if (isPolling) return; // Prevent multiple overlapping requests
+            isPolling = true;
+
             try {
                 const response = await fetch('/api/live/', {
                     method: 'POST',
@@ -47,28 +122,88 @@
                     },
                     body: new URLSearchParams({
                         'keyphrase': 'live'
-                    })
+                    }),
                 });
+
                 if (response.ok) {
                     const result = await response.json();
                     if (result.video_url) {
-                        const video = document.getElementById('result-video');
-                        // only replace if different
-                        if (video.src !== result.video_url) {
+                        const video = document.getElementById('video-player');
+                        rvideo_url = 'http://localhost:8000' + result.video_url;
+                        if (video.src !== rvideo_url) {
                             video.src = result.video_url;
                         }
                     } else {
                         console.error('Video URL not found in response');
                     }
+
+                    if (result.img_url) {
+                        const image = document.getElementById('img-view');
+                        image.src = result.img_url;
+                    } else {
+                        console.error('Image URL not found in response');
+                    }
+
+                    if (result.file_id) {
+                        const metrics = await loadMetrics(result.file_id); // Await the metrics
+                        updateMetricsTable(metrics);
+                    } else {
+                        console.error('Metrics not found in response');
+                    }
+
                 } else if (response.status === 422) {
                     console.error('Unprocessable Entity: Stopping further attempts.');
-                    return;  // Break the loop without fatal error
+                    return;
                 } else {
                     console.error('Failed to fetch data:', response.statusText);
                 }
             } catch (error) {
                 console.error('Error while polling API:', error);
+            } finally {
+                isPolling = false; // Reset polling state
             }
+        }
+
+        async function loadMetrics(fileId) {
+            if (!fileId) {
+                console.error('No file selected for metrics');
+                return [];
+            }
+
+            const metricUrl = `${url}/api/get_metrics/${keyphrase}?file_id=${fileId}`;
+
+            try {
+                const response = await fetch(metricUrl);
+                const data = await response.json();
+
+                if (data.status === "success" && data.metrics) {
+                    return data.metrics;
+                } else {
+                    console.error('Error loading metrics:', data.message);
+                    return [];
+                }
+            } catch (error) {
+                console.error('Fetch error:', error);
+                return [];
+            }
+        }
+
+        function updateMetricsTable(metrics) {
+            const table = document.getElementById('metrics-table');
+            table.innerHTML = ''; // Clear existing table rows
+
+            // Populate table rows with metrics data
+            metrics.forEach(metric => {
+                // Extract each key-value pair from the metric object
+                for (const [key, value] of Object.entries(metric)) {
+                    const row = table.insertRow();
+                    const keyCell = row.insertCell(0);
+                    const valueCell = row.insertCell(1);
+
+                    keyCell.textContent = key;
+                    valueCell.textContent = value;
+                }
+            });
         }
 
         // Poll the API every 5 seconds

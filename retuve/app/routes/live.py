@@ -16,34 +16,128 @@
 The API for Retuve Live
 """
 
-import logging
 import asyncio
+import json
+import logging
+import os
+import shutil
 import traceback
+from contextlib import asynccontextmanager
 from datetime import datetime
 
 import httpx
 from fastapi import APIRouter, Form, HTTPException, Request
 
-from retuve import __version__ as retuve_version
-from retuve.app.classes import Metric2D, Metric3D, ModelResponse
-from retuve.app.helpers import TMP_RESULTS_DIR, TMP_RESULTS_URL_ACCESS
-from retuve.funcs import retuve_run
+from retuve.app.classes import LiveResponse
+from retuve.app.helpers import RESULTS_DIR, RESULTS_URL_ACCESS
+from retuve.app.utils import (
+    get_sorted_dicom_images,
+    save_dicom_and_get_results,
+    save_results,
+)
 from retuve.keyphrases.config import Config
-from retuve.testdata import Cases, download_case
-
-router = APIRouter()
 
 logging.getLogger("httpx").setLevel(logging.CRITICAL)
+
 
 class NoDicomFoundError(Exception):
     pass
 
 
+# Create a global queue for DICOM processing
+dicom_processing_queue = asyncio.Queue()
+
+processed_instance_ids = set()
+
+
+async def process_dicom_queue():
+    """
+    Background task to process queued DICOM files and save results in `live_savedir`.
+    """
+    while True:
+        dicom_data = await dicom_processing_queue.get()
+        instance_id, dicom_content, config, live_savedir = dicom_data
+
+        if instance_id in processed_instance_ids:
+            logging.info(f"Skipping already processed DICOM: {instance_id}")
+            dicom_processing_queue.task_done()
+            continue
+
+        try:
+
+            live_batchdir = config.batch.datasets[0]
+
+            # Define the directory for saving results
+            result_dir = f"{live_savedir}/{instance_id}"
+
+            # check if metrics already exists
+            if os.path.exists(f"{result_dir}/metrics.json"):
+                logging.info(
+                    f"Skipping already processed DICOM: {instance_id}"
+                )
+                dicom_processing_queue.task_done()
+                continue
+
+            # Process the DICOM
+            result = await save_dicom_and_get_results(
+                live_batchdir, instance_id, dicom_content, config
+            )
+            await save_results(instance_id, live_savedir, result=result)
+
+            logging.info(
+                f"Processed and saved results for DICOM: {instance_id} in {result_dir}"
+            )
+
+            processed_instance_ids.add(instance_id)
+
+        except Exception as e:
+            logging.error(
+                f"Error processing DICOM {instance_id}: {traceback.format_exc()}"
+            )
+        finally:
+            dicom_processing_queue.task_done()
+
+
+async def constantly_delete_temp_dirs(config):
+    """
+    Background task to constantly delete temporary directories.
+    """
+    if not config.zero_trust:
+        return
+
+    while True:
+        # Delete the temporary directory
+        if os.path.exists(RESULTS_DIR):
+            shutil.rmtree(RESULTS_DIR)
+            os.makedirs(RESULTS_DIR, exist_ok=True)
+
+        await asyncio.sleep(config.zero_trust_interval)
+
+
+@asynccontextmanager
+async def lifespan(app):
+    # Create the task once the event loop is running
+    task = asyncio.create_task(process_dicom_queue())
+    task2 = asyncio.create_task(
+        constantly_delete_temp_dirs(app.config["live"])
+    )
+
+    yield
+
+    task.cancel()
+    task2.cancel()
+
+
+router = APIRouter(lifespan=lifespan)
+
+
 @router.post(
     "/api/live/",
-    response_model=ModelResponse,
+    response_model=LiveResponse,
     responses={
-        204: {"description": "No Content - Retuve Run likely to be in progress."},
+        204: {
+            "description": "No Content - Retuve Run likely to be in progress."
+        },
         400: {"description": "Invalid file type. Expected a DICOM file."},
         422: {"description": "No DICOM images found on the Orthanc server."},
         500: {"description": "Internal Server Error"},
@@ -64,24 +158,39 @@ async def analyse_image(
     try:
         config = Config.get_config(keyphrase)
 
+        if config.api.zero_trust:
+            live_savedir = RESULTS_DIR
+            live_batchdir = RESULTS_DIR
+        else:
+            live_savedir = config.api.savedir
+            live_batchdir = config.batch.datasets[0]
+
         hippa_logger = request.app.config[config.name].hippa_logger
 
-        try:
-            # Usage example:
-            latest_dicom, instance_id = await get_latest_dicom_image(
-                "http://localhost:8042", "orthanc", "orthanc"
-            )
+        # Usage example: Fetch all DICOMs and find the latest one
+        dicoms, request.app.latest_time = await get_sorted_dicom_images(
+            config.api.orthanc_url,
+            config.api.orthanc_username,
+            config.api.orthanc_password,
+            latest_time=request.app.latest_time,
+        )
 
-        except Exception as e:
+        if dicoms:
+            # Get the latest DICOM (the last one in the sorted list)
+            latest_dicom, instance_id = dicoms[-1]
+        else:
             raise NoDicomFoundError(
                 "No DICOM images found on the Orthanc server."
             )
 
-        # write latest_dicom to a temporary file
-        with open(f"{TMP_RESULTS_DIR}/{instance_id}.dcm", "wb") as f:
-            f.write(latest_dicom)
-
-        if request.app.instance_id_cache == instance_id:
+        if (
+            request.app.instance_id_cache == instance_id
+            and not config.api.zero_trust
+        ):
+            hippa_logger.debug(
+                f"Retuve Run for {instance_id} with keyphrase {keyphrase} "
+                f"from host: {request.client.host} has been soft-cached."
+            )
             if not request.app.model_response_cache:
                 raise HTTPException(
                     status_code=204,
@@ -91,71 +200,46 @@ async def analyse_image(
 
         request.app.instance_id_cache = instance_id
 
-        result = await asyncio.to_thread(
-            retuve_run,
-            hip_mode=config.batch.hip_mode,
-            config=config,
-            modes_func=config.batch.mode_func,
-            modes_func_kwargs_dict={},
-            file=f"{TMP_RESULTS_DIR}/{instance_id}.dcm",
+        if os.path.exists(f"{live_savedir}/{instance_id}"):
+
+            video_path, img_path, _ = await save_results(
+                instance_id, live_savedir, just_paths=True
+            )
+
+            video_path = video_path.replace(
+                live_savedir, f"{RESULTS_URL_ACCESS}/{config.name}"
+            )
+            img_path = img_path.replace(
+                live_savedir, f"{RESULTS_URL_ACCESS}/{config.name}"
+            )
+
+            request.app.model_response_cache = LiveResponse(
+                file_id=instance_id,
+                video_url=video_path,
+                img_url=img_path,
+            )
+
+            hippa_logger.debug(
+                f"Retuve Run for {instance_id} with keyphrase {keyphrase} "
+                f"from host: {request.client.host} has been hard-cached."
+            )
+
+            return request.app.model_response_cache
+
+        result = await save_dicom_and_get_results(
+            live_batchdir, instance_id, latest_dicom, config
         )
 
-        notes = ""
-        metrics3d = []
-        metrics2d = []
-        video_path = None
-        figure_path = None
-        img_path = None
+        video_path, img_path, _ = await save_results(
+            instance_id, live_savedir, result=result
+        )
 
-        if result.video_clip:
-            video_path = f"{TMP_RESULTS_DIR}/{instance_id}.mp4"
-            await asyncio.to_thread(result.video_clip.write_videofile, video_path)
-            video_path = video_path.replace(TMP_RESULTS_DIR, TMP_RESULTS_URL_ACCESS)
-
-        if result.visual_3d:
-            figure_path = f"{TMP_RESULTS_DIR}/{instance_id}.html"
-            await asyncio.to_thread(result.visual_3d.write_html, figure_path)
-            figure_path = figure_path.replace(TMP_RESULTS_DIR, TMP_RESULTS_URL_ACCESS)
-
-        if result.image:
-            img_path = f"{TMP_RESULTS_DIR}/{instance_id}.jpg"
-            await asyncio.to_thread(result.image.save, img_path)
-            img_path = img_path.replace(TMP_RESULTS_DIR, TMP_RESULTS_URL_ACCESS)
-
-
-        if result.visual_3d:
-            figure_path = f"{TMP_RESULTS_DIR}/{instance_id}.html"
-            result.visual_3d.write_html(figure_path)
-            figure_path = figure_path.replace(
-                TMP_RESULTS_DIR, TMP_RESULTS_URL_ACCESS
-            )
-
-        if result.image:
-            img_path = f"{TMP_RESULTS_DIR}/{instance_id}.jpg"
-            result.image.save(img_path)
-            img_path = img_path.replace(
-                TMP_RESULTS_DIR, TMP_RESULTS_URL_ACCESS
-            )
-
-        if result.hip_datas:
-            for metric in result.hip_datas.metrics:
-                metrics3d.append(
-                    Metric3D(
-                        name=metric.name,
-                        post=0 if metric.post == "N/A" else metric.post,
-                        graf=0 if metric.graf == "N/A" else metric.graf,
-                        ant=0 if metric.ant == "N/A" else metric.ant,
-                        full=0 if metric.full == "N/A" else metric.full,
-                    )
-                )
-
-            notes = str(result.hip_datas.recorded_error)
-
-        if result.image:
-            for metric in result.hip.metrics:
-                metrics2d.append(
-                    Metric2D(name=metric.name, value=metric.value)
-                )
+        video_path = video_path.replace(
+            live_savedir, f"{RESULTS_URL_ACCESS}/{config.name}"
+        )
+        img_path = img_path.replace(
+            live_savedir, f"{RESULTS_URL_ACCESS}/{config.name}"
+        )
 
         # Mark success in hippa logs
         hippa_logger.info(
@@ -163,21 +247,25 @@ async def analyse_image(
             f"from host: {request.client.host}."
         )
 
-        request.app.model_response_cache = ModelResponse(
-            notes=notes,
-            metrics_3d=metrics3d,
-            video_url=f"{config.api.url}{video_path}" if video_path else "",
-            figure_url=f"{config.api.url}{figure_path}" if figure_path else "",
-            img_url=f"{config.api.url}{img_path}" if img_path else "",
-            retuve_version=retuve_version,
-            keyphrase_name=config.name,
-            metrics_2d=metrics2d,
+        request.app.model_response_cache = LiveResponse(
+            file_id=instance_id,
+            video_url=video_path if video_path else "",
+            img_url=img_path if img_path else "",
         )
 
         # check if there is a valid response, otherwise raise a 500 error
         if not request.app.model_response_cache:
             raise HTTPException(
                 status_code=500, detail="Internal Server Error, check logs."
+            )
+
+        if config.api.zero_trust:
+            return request.app.model_response_cache
+
+        # Queue the remaining DICOMs for background processing
+        for dicom, dicom_id in dicoms[:-1]:
+            await dicom_processing_queue.put(
+                (dicom_id, dicom, config, live_savedir)
             )
 
         return request.app.model_response_cache
@@ -190,7 +278,6 @@ async def analyse_image(
         # Allow expected HTTP exceptions to pass through without wrapping in a 500
         raise http_exc
 
-
     except Exception as e:
         # print traceback to hippa logs
         hippa_logger.error(
@@ -201,88 +288,3 @@ async def analyse_image(
         raise HTTPException(
             status_code=500, detail="Internal Server Error, check logs."
         )
-
-
-async def get_latest_dicom_image(orthanc_url, username=None, password=None):
-    """
-    Gets the latest DICOM image from an Orthanc server by both acquisition date and time.
-
-    :param orthanc_url: The base URL of the Orthanc server (e.g., http://localhost:8042).
-    :param username: (Optional) Username for basic authentication.
-    :param password: (Optional) Password for basic authentication.
-    :return: The latest DICOM image file.
-    """
-    auth = (username, password) if username and password else None
-
-    async with httpx.AsyncClient() as client:
-        # Fetch the list of patients
-        patients_response = await client.get(
-            f"{orthanc_url}/patients", auth=auth
-        )
-        patients = patients_response.json()
-
-        latest_image = None
-        latest_date_time = datetime.min
-
-        for patient_id in patients:
-            # Fetch the studies for each patient
-            studies_response = await client.get(
-                f"{orthanc_url}/patients/{patient_id}/studies", auth=auth
-            )
-            studies = studies_response.json()
-
-            for study in studies:
-                study_id = study["ID"]
-                # Fetch the series for each study
-                series_list_response = await client.get(
-                    f"{orthanc_url}/studies/{study_id}/series", auth=auth
-                )
-                series_list = series_list_response.json()
-
-                for series in series_list:
-                    series_id = series["ID"]
-                    # Fetch the instances for each series
-                    instances_response = await client.get(
-                        f"{orthanc_url}/series/{series_id}/instances",
-                        auth=auth,
-                    )
-                    instances = instances_response.json()
-
-                    for instance in instances:
-                        instance_id = instance["ID"]
-                        # Fetch the metadata for each instance
-                        instance_metadata_response = await client.get(
-                            f"{orthanc_url}/instances/{instance_id}/simplified-tags",
-                            auth=auth,
-                        )
-                        instance_metadata = instance_metadata_response.json()
-
-                        # Check the acquisition date and time
-                        acquisition_date_str = instance_metadata.get(
-                            "AcquisitionDate"
-                        )
-                        acquisition_time_str = instance_metadata.get(
-                            "AcquisitionTime"
-                        )
-
-                        if acquisition_date_str and acquisition_time_str:
-                            acquisition_date_time_str = (
-                                acquisition_date_str
-                                + acquisition_time_str.split(".")[0]
-                            )  # to avoid microseconds
-                            acquisition_date_time = datetime.strptime(
-                                acquisition_date_time_str, "%Y%m%d%H%M%S"
-                            )
-
-                            if acquisition_date_time > latest_date_time:
-                                latest_date_time = acquisition_date_time
-                                latest_image = instance_id
-
-        if latest_image:
-            # Download the latest DICOM image
-            latest_image_response = await client.get(
-                f"{orthanc_url}/instances/{latest_image}/file", auth=auth
-            )
-            return latest_image_response.content, latest_image
-        else:
-            raise ValueError("No DICOM images found on the Orthanc server.")
