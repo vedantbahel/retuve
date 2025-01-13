@@ -66,10 +66,10 @@ def find_ace(landmarks: LandmarksXRay) -> tuple[float, float]:
 
     ace_index_right = round(180 - np.degrees(ace_index_right), 1)
 
-    if 5 < ace_index_left < 50:
+    if not (5 < ace_index_left < 50):
         ace_index_left = 0
 
-    if 5 < ace_index_right < 50:
+    if not (5 < ace_index_right < 50):
         ace_index_right = 0
 
     return ace_index_left, ace_index_right
