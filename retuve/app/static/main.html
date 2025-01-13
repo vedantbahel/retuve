@@ -386,9 +386,9 @@
                     if (data.status === "success" && data.metrics) {
                         updateMetricsTable(data.metrics);
                     } else {
-                        // log all of data
-                        console.log(data);
                         console.error('Error loading metrics:', data.message);
+                        updateMetricsTable([]); // Clear the metrics table
+
                     }
                 })
                 .catch(error => console.error('Fetch error:', error));

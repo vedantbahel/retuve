@@ -85,6 +85,7 @@
 <body>
     <header>Retuve</header>
     <h1>Retuve Model Analysis Results</h1>
+    <h2 id=viewing>Viewing: </h2>
     <div class="container">
         <div class="content-viewer">
 
@@ -121,17 +122,20 @@
                         'Content-Type': 'application/x-www-form-urlencoded',
                     },
                     body: new URLSearchParams({
-                        'keyphrase': 'live'
+                        'keyphrase': keyphrase
                     }),
                 });
 
                 if (response.ok) {
                     const result = await response.json();
+
                     if (result.video_url) {
                         const video = document.getElementById('video-player');
-                        rvideo_url = 'http://localhost:8000' + result.video_url;
-                        if (video.src !== rvideo_url) {
-                            video.src = result.video_url;
+                        const baseUrl = `${window.location.protocol}//${window.location.host}`;
+                        const newVideoUrl = baseUrl + result.video_url;
+
+                        if (video.src !== newVideoUrl) {
+                            video.src = newVideoUrl;
                         }
                     } else {
                         console.error('Video URL not found in response');
@@ -139,7 +143,10 @@
 
                     if (result.img_url) {
                         const image = document.getElementById('img-view');
-                        image.src = result.img_url;
+
+                        if (image.src !== result.img_url) {
+                            image.src = result.img_url;
+                        }
                     } else {
                         console.error('Image URL not found in response');
                     }
@@ -147,10 +154,16 @@
                     if (result.file_id) {
                         const metrics = await loadMetrics(result.file_id); // Await the metrics
                         updateMetricsTable(metrics);
+
+                        const viewing = document.getElementById('viewing');
+                        const newViewingText = `Viewing: ${result.file_id}`;
+
+                        if (viewing.textContent !== newViewingText) {
+                            viewing.textContent = newViewingText;
+                        }
                     } else {
                         console.error('Metrics not found in response');
                     }
-
                 } else if (response.status === 422) {
                     console.error('Unprocessable Entity: Stopping further attempts.');
                     return;

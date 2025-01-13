@@ -17,15 +17,12 @@ The API for Retuve Live
 """
 
 import asyncio
-import json
 import logging
 import os
 import shutil
 import traceback
 from contextlib import asynccontextmanager
-from datetime import datetime
 
-import httpx
 from fastapi import APIRouter, Form, HTTPException, Request
 
 from retuve.app.classes import LiveResponse
@@ -34,6 +31,7 @@ from retuve.app.utils import (
     get_sorted_dicom_images,
     save_dicom_and_get_results,
     save_results,
+    validate_api_token,
 )
 from retuve.keyphrases.config import Config
 
@@ -82,6 +80,9 @@ async def process_dicom_queue():
             result = await save_dicom_and_get_results(
                 live_batchdir, instance_id, dicom_content, config
             )
+            if not result:
+                dicom_processing_queue.task_done()
+                continue
             await save_results(instance_id, live_savedir, result=result)
 
             logging.info(
@@ -119,7 +120,7 @@ async def lifespan(app):
     # Create the task once the event loop is running
     task = asyncio.create_task(process_dicom_queue())
     task2 = asyncio.create_task(
-        constantly_delete_temp_dirs(app.config["live"])
+        constantly_delete_temp_dirs(Config.live_config.name)
     )
 
     yield
@@ -154,6 +155,9 @@ async def analyse_image(
     :param keyphrase: The keyphrase to be used for analysis.
     :raises HTTPException: If the file or keyphrase is invalid.
     """
+
+    api_token = request.cookies.get("api_token")
+    validate_api_token(api_token)
 
     try:
         config = Config.get_config(keyphrase)
@@ -279,7 +283,6 @@ async def analyse_image(
         raise http_exc
 
     except Exception as e:
-        # print traceback to hippa logs
         hippa_logger.error(
             f"Error in processing {instance_id} with keyphrase {keyphrase} "
             f"from host: {request.client.host}."

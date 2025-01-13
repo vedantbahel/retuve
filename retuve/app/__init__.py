@@ -24,7 +24,10 @@ retuve --task trak --keyphrase_file config.py
 Swagger Documentaition for the API is coming soon.
 """
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import RedirectResponse
+
+from retuve.app.utils import UnauthorizedException
 
 from .routes.api import router as routes_app
 from .routes.live import router as live_app
@@ -32,6 +35,15 @@ from .routes.models import router as models_app
 from .routes.ui import router as web_app
 
 app = FastAPI()
+
+
+@app.exception_handler(UnauthorizedException)
+async def unauthorized_exception_handler(
+    request: Request, exc: UnauthorizedException
+):
+    # 303 = “See Other”
+    return RedirectResponse(url="/", status_code=303)
+
 
 app.include_router(routes_app)
 app.include_router(models_app)

@@ -12,37 +12,66 @@
     <header>Retuve</header>
     <div class="index-container">
         <h1>Upload a Zip File</h1>
-        <form action="/api/upload/" enctype="multipart/form-data" method="post">
-            <input type="file" name="file" accept=".zip,.jpg,.png">
+        <form id="upload-form" action="/api/upload/" enctype="multipart/form-data" method="post">
+            <input type="file" name="file" accept=".zip,.jpg,.png,.dcm,.nii.gz" required>
             <select name="keyphrase">
                 {% for keyphrase in keyphrases %}
                 <option value="{{ keyphrase }}">{{ keyphrase }}</option>
                 {% endfor %}
             </select>
-            <input type="submit">
+            <input type="submit" value="Upload">
         </form>
+
+        <div id="upload-progress-container" style="display: none;">
+            <p>Uploading...</p>
+            <progress id="upload-progress" value="0" max="100"></progress>
+        </div>
+
         <div id="upload-result"></div>
         <a href="/" class="back-button upload-back-button">Back</a>
     </div>
     <footer>&copy; 2024 Adam McArthur</footer>
     <script>
-        document.querySelector('form').addEventListener('submit', function (event) {
+        document.querySelector('#upload-form').addEventListener('submit', function (event) {
             event.preventDefault();
-            var keyphrase = document.querySelector('select[name="keyphrase"]').value;
-            var formData = new FormData(this);
 
-            fetch('/api/upload/' + encodeURIComponent(keyphrase), {
-                method: 'POST',
-                body: formData
-            })
-                .then(response => response.json())
-                .then(data => {
-                    var resultDiv = document.getElementById('upload-result');
-                    resultDiv.innerHTML = `<p>Upload successful!</p>`;
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                });
+            const form = event.target;
+            const formData = new FormData(form);
+            const keyphrase = document.querySelector('select[name="keyphrase"]').value;
+
+            const progressContainer = document.getElementById('upload-progress-container');
+            const progressBar = document.getElementById('upload-progress');
+            const resultDiv = document.getElementById('upload-result');
+
+            progressContainer.style.display = 'block';
+            resultDiv.innerHTML = '';
+
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', `/api/upload/${encodeURIComponent(keyphrase)}`);
+
+            xhr.upload.addEventListener('progress', function (event) {
+                if (event.lengthComputable) {
+                    const percentComplete = (event.loaded / event.total) * 100;
+                    progressBar.value = percentComplete;
+                }
+            });
+
+            xhr.addEventListener('load', function () {
+                progressContainer.style.display = 'none';
+
+                if (xhr.status === 200) {
+                    resultDiv.innerHTML = '<p>Upload successful!</p>';
+                } else {
+                    resultDiv.innerHTML = '<p>Upload failed. Please try again.</p>';
+                }
+            });
+
+            xhr.addEventListener('error', function () {
+                progressContainer.style.display = 'none';
+                resultDiv.innerHTML = '<p>An error occurred during the upload.</p>';
+            });
+
+            xhr.send(formData);
         });
     </script>
 </body>

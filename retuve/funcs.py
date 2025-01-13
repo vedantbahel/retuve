@@ -70,6 +70,7 @@ def get_fps(no_of_frames: int, min_fps=30, min_vid_length=6) -> int:
 
     return fps if fps > 0 else 1
 
+
 def process_landmarks_xray(
     config: Config,
     landmark_results: List[LandmarksXRay],

@@ -32,7 +32,7 @@ default_US.visuals.bounding_box_thickness = 8
 default_US.hip.display_side = False
 default_US.visuals.display_segs = True
 
-default_US.register(name="default_US", store=False)
+default_US.register(name="default_US", store=False, silent=True)
 
 default_xray = base_config.get_copy()
 default_xray.operation_type = OperationType.LANDMARK
@@ -41,7 +41,6 @@ default_xray.visuals.line_thickness = 3
 default_xray.visuals.default_font_size = 20
 default_xray.visuals.bounding_box_thickness = 7
 
-default_xray.register(name="default_xray", store=False)
+default_xray.register(name="default_xray", store=False, silent=True)
 
 live = default_US.get_copy()
-# live.register(name="live", store=False)
