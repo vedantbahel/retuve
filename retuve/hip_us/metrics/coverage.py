@@ -62,6 +62,9 @@ def find_cov_landmarks(
     diameter_1 = abs(most_right_point[0] - most_left_point[0])
     diameter_2 = abs(bottom_most_point[1] - top_most_point[1])
 
+    if diameter_1 == 0 or diameter_2 == 0:
+        return landmarks
+
     # Reject frames with a non-circular femoral head
     if abs((diameter_1 - diameter_2) / diameter_1) > 0.35:
         return landmarks
@@ -154,6 +157,9 @@ def find_coverage(landmarks: LandmarksUS) -> float:
 
     # if the mid_point is above the point_D, then the coverage is 0
     if landmarks.mid_cov_point[1] > landmarks.point_D[1]:
+        coverage = 0
+
+    if coverage > 1.5:
         coverage = 0
 
     return round(coverage, 3)

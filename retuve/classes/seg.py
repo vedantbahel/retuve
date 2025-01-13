@@ -40,7 +40,6 @@ import numpy as np
 import numpy.typing as npt
 from PIL import Image
 from radstract.data.colors import get_unique_colours
-
 from retuve.hip_us.classes.enums import HipLabelsUS
 from retuve.hip_xray.classes import HipLabelsXray
 

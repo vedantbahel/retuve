@@ -17,8 +17,6 @@ The parent class for for Retuve configs
 """
 
 import copy
-import os
-from calendar import c
 from typing import List, Tuple
 
 from PIL import ImageFont
@@ -37,10 +35,17 @@ from retuve.logs import ulogger
 from retuve.utils import RETUVE_DIR, register_config_dirs
 
 
+class GlobalConfig:
+    def __init__(self, username: str, password: str):
+        self.username = username
+        self.password = password
+
+
 class Config:
     """Configuration class."""
 
     configs = {}
+    live_config = None
 
     def __init__(
         self,
@@ -114,7 +119,13 @@ class Config:
         ]:
             raise ValueError(f"Invalid operation type: {operation_type}")
 
-    def register(self, name: str, store: bool = True):
+    def register(
+        self,
+        name: str,
+        store: bool = True,
+        silent: bool = False,
+        live: bool = False,
+    ):
         """
         Register the config.
 
@@ -135,6 +146,9 @@ class Config:
         if store:
             self.configs[name] = self
 
+        if live:
+            Config.live_config = self
+
         # defaults need registering
         if self.visuals.default_font_size:
             self.visuals.font_h1 = ImageFont.truetype(
@@ -154,16 +168,18 @@ class Config:
         if not self.api.api_token:
             ValueError("API token must be set.")
 
-        ulogger.info(f"Registered config for {name}")
+        if not silent:
+            ulogger.info(f"Registered config for {name}")
 
-    def unregister(self):
+    def unregister(self, silent: bool = False):
         """
         Unregister the config.
         """
         if self.name in self.configs:
             del self.configs[self.name]
 
-        ulogger.info(f"Unregistered config for {self.name}")
+        if not silent:
+            ulogger.info(f"Unregistered config for {self.name}")
 
     def get_copy(self) -> "Config":
         """
@@ -172,6 +188,15 @@ class Config:
         :return: A copy of the config.
         """
         return copy.deepcopy(self)
+
+    def inject_global_config(self, username, password):
+        """
+        Inject the global config into the config.
+
+        :param username (str): The username.
+        :param password (str): The password.
+        """
+        Config.global_config = GlobalConfig(username, password)
 
     @classmethod
     def get_configs(self) -> List[Tuple[str, "Config"]]:

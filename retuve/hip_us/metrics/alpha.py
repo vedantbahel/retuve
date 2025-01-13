@@ -51,7 +51,11 @@ def find_alpha_landmarks(
 
     left_most, right_most = find_midline_extremes(illium.midline_moved)
 
-    if right_most is None or left_most is None:
+    if (
+        right_most is None
+        or left_most is None
+        or (right_most[1] - left_most[1]) == 0
+    ):
         return landmarks
 
     # get the equation for the line between the two extreme points

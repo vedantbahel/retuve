@@ -80,10 +80,18 @@ def get_state(config: Config) -> bool:
             os.makedirs(os.path.join(save_dir, file_id), exist_ok=True)
 
             # Insert Empty Images automatically, if mode is not 3D
-            if config.batch.hip_mode != HipMode.US3D:
+            if config.batch.hip_mode not in [HipMode.US3D, HipMode.US2DSW]:
                 shutil.copyfile(
                     file, os.path.join(save_dir, file_id, "img.jpg")
                 )
+
+            any_case_videos_exist = any(
+                os.path.isfile(os.path.join(path, "video.mp4"))
+                for path in output_paths
+            )
+
+            if any_case_videos_exist:
+                updated.state = FileEnum.FAILED
 
         new_states[file_id] = updated
 

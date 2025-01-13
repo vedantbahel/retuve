@@ -24,6 +24,9 @@ from fastapi import APIRouter, File, Request, UploadFile
 from fastapi.responses import JSONResponse
 
 from retuve.app.classes import FeedbackRequest, SystemFiles
+from retuve.app.helpers import RESULTS_DIR
+from retuve.app.routes.live import dicom_processing_queue
+from retuve.app.utils import validate_api_token
 from retuve.keyphrases.config import Config
 from retuve.logs import ulogger
 from retuve.trak.data import extract_files
@@ -41,6 +44,9 @@ async def store_feedback(feedback_request: FeedbackRequest, keyphrase: str):
 
     :return: The status of the feedback storage.
     """
+
+    api_token = feedback_request.cookies.get("api_token")
+    validate_api_token(api_token)
 
     config = Config.get_config(keyphrase)
     file_id = feedback_request.file_id
@@ -68,7 +74,7 @@ async def store_feedback(feedback_request: FeedbackRequest, keyphrase: str):
 
 
 @router.get("/api/get_feedback/{keyphrase}")
-async def get_feedback(file_id: str, keyphrase: str):
+async def get_feedback(file_id: str, keyphrase: str, request: Request):
     """
     Get feedback on a result.
 
@@ -77,6 +83,9 @@ async def get_feedback(file_id: str, keyphrase: str):
 
     :return: The feedback on the result.
     """
+
+    api_token = request.cookies.get("api_token")
+    validate_api_token(api_token)
 
     config = Config.get_config(keyphrase)
     feedback_file = f"{config.api.savedir}/{file_id}/feedback.json"
@@ -88,13 +97,16 @@ async def get_feedback(file_id: str, keyphrase: str):
 
 
 @router.get("/api/get_metrics/{keyphrase}")
-async def get_metrics(file_id: str, keyphrase: str):
+async def get_metrics(file_id: str, keyphrase: str, request: Request):
     """
     Get metrics on a result.
 
     :param file_id: The file id.
     :param keyphrase: The keyphrase to get right config.
     """
+
+    api_token = request.cookies.get("api_token")
+    validate_api_token(api_token)
 
     config = Config.get_config(keyphrase)
     metrics_file = f"{config.api.savedir}/{file_id}/metrics.json"
@@ -107,7 +119,9 @@ async def get_metrics(file_id: str, keyphrase: str):
 
 
 @router.post("/api/upload/{keyphrase}")
-async def handle_upload(keyphrase: str, file: UploadFile = File(...)):
+async def handle_upload(
+    request: Request, keyphrase: str, file: UploadFile = File(...)
+):
     """
     Handle file uploads.
 
@@ -115,12 +129,20 @@ async def handle_upload(keyphrase: str, file: UploadFile = File(...)):
     :param file: The file to upload.
     """
 
+    api_token = request.cookies.get("api_token")
+    validate_api_token(api_token)
+
     config = Config.get_config(keyphrase)
 
     os.makedirs(config.api.upload_dir, exist_ok=True)
     file_location = f"{config.api.upload_dir}/{file.filename}"
     with open(file_location, "wb+") as file_object:
         shutil.copyfileobj(file.file, file_object)
+
+    if config.api.zero_trust:
+        live_savedir = RESULTS_DIR
+    else:
+        live_savedir = config.api.savedir
 
     # check if the file is a zip, and extract it
     if file.filename.endswith(".zip"):
@@ -147,6 +169,11 @@ async def handle_upload(keyphrase: str, file: UploadFile = File(...)):
                     os.path.join(config.api.upload_dir, _file),
                 )
 
+                dicom_id = _file.split(".")[0]
+                await dicom_processing_queue.put(
+                    (dicom_id, None, config, live_savedir)
+                )
+
         # delete the temp folder
         shutil.rmtree(temp_dir)
 
@@ -155,6 +182,9 @@ async def handle_upload(keyphrase: str, file: UploadFile = File(...)):
         return {
             "info": f"file '{file.filename}' extracted at '{config.api.upload_dir}'"
         }
+
+    dicom_id = file.filename.split(".")[0]
+    await dicom_processing_queue.put((dicom_id, None, config, live_savedir))
 
     return {"info": f"file '{file.filename}' saved at '{file_location}'"}
 
@@ -169,7 +199,7 @@ async def handle_upload(keyphrase: str, file: UploadFile = File(...)):
     response_model=SystemFiles,
     responses={400: {"description": "Error"}},
 )
-async def get_states(keyphrase: str):
+async def get_states(keyphrase: str, request: Request):
     """
     Get the states from the database.
 
@@ -177,6 +207,9 @@ async def get_states(keyphrase: str):
 
     :return: The states from the database.
     """
+
+    api_token = request.cookies.get("api_token")
+    validate_api_token(api_token)
 
     config = Config.get_config(keyphrase)
     states = extract_files(config.api.db_path)
@@ -192,6 +225,9 @@ async def keyphrases(request: Request):
 
     :return: The valid keyphrases.
     """
+
+    api_token = request.cookies.get("api_token")
+    validate_api_token(api_token)
 
     keyphrases = [keyphrase for keyphrase, _ in Config.get_configs()]
     return JSONResponse(content={"keyphrases": keyphrases})
