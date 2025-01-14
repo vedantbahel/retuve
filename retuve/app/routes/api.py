@@ -35,7 +35,9 @@ router = APIRouter()
 
 
 @router.post("/api/store_feedback/{keyphrase}")
-async def store_feedback(feedback_request: FeedbackRequest, keyphrase: str):
+async def store_feedback(
+    request: Request, feedback_request: FeedbackRequest, keyphrase: str
+):
     """
     Store feedback on a result.
 
@@ -45,7 +47,7 @@ async def store_feedback(feedback_request: FeedbackRequest, keyphrase: str):
     :return: The status of the feedback storage.
     """
 
-    api_token = feedback_request.cookies.get("api_token")
+    api_token = request.cookies.get("api_token")
     validate_api_token(api_token)
 
     config = Config.get_config(keyphrase)
