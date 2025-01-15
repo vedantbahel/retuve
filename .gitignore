@@ -13,3 +13,4 @@ __pycache__
 /build
 live.spec
 retuve-data
+.env

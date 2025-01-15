@@ -181,6 +181,9 @@ async def get_sorted_dicom_images(
                     (acq_datetime, file_response.content, instance_id)
                 )
 
+        if len(final_images_with_dates) == 0:
+            return [], latest_acq_time
+
         images_with_dates.sort(key=lambda x: x[0])
         latest_image = images_with_dates[-1]
 

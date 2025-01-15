@@ -158,6 +158,7 @@ async def analyse_image(
 
     api_token = request.cookies.get("api_token")
     validate_api_token(api_token)
+    instance_id = "Unknown"
 
     try:
         config = Config.get_config(keyphrase)

@@ -91,6 +91,8 @@ def get_state(config: Config) -> bool:
             )
 
             if any_case_videos_exist:
+                # Add the video URL
+                updated.video_url = os.path.join(base_url, Outputs.VIDEO_CLIP)
                 updated.state = FileEnum.FAILED
 
         new_states[file_id] = updated
