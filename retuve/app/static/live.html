@@ -132,9 +132,13 @@
                     if (result.video_url) {
                         const video = document.getElementById('video-player');
                         const baseUrl = `${window.location.protocol}//${window.location.host}`;
-                        const newVideoUrl = baseUrl + result.video_url;
+                        var newVideoUrl = baseUrl + result.video_url;
 
-                        if (video.src !== newVideoUrl) {
+                        // Remove %20 from the URL
+                        newVideoUrl = newVideoUrl.replace(/%20/g, ' ');
+                        oldVideoUrl = video.src.replace(/%20/g, ' ');
+
+                        if (oldVideoUrl !== newVideoUrl) {
                             video.src = newVideoUrl;
                         }
                     } else {

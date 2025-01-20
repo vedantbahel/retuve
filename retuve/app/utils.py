@@ -5,14 +5,8 @@ import os
 import secrets
 from datetime import datetime
 
-from fastapi import (
-    APIRouter,
-    Depends,
-    Header,
-    HTTPException,
-    Request,
-    Response,
-)
+from fastapi import (APIRouter, Depends, Header, HTTPException, Request,
+                     Response)
 from httpx import AsyncClient
 
 from retuve.funcs import retuve_run
@@ -164,6 +158,9 @@ async def get_sorted_dicom_images(
 
         final_images_with_dates = []
 
+        if len(images_with_dates) == 0:
+            return [], latest_acq_time
+
         for acq_datetime, instance_id in images_with_dates:
             if acq_datetime > latest_acq_time:
                 file_response = await client.get(
@@ -172,7 +169,7 @@ async def get_sorted_dicom_images(
                 )
 
                 # hash the main instance_id to be smaller
-                small_id = hash(instance_id) % (10**8)
+                small_id = consistent_hash(instance_id, 10**8)
                 instance_id = f"{acq_datetime.strftime('%Y-%m-%d-%H:%M:%S')} ID-{small_id}"
 
                 latest_acq_time = max(latest_acq_time, acq_datetime)
@@ -180,9 +177,6 @@ async def get_sorted_dicom_images(
                 final_images_with_dates.append(
                     (acq_datetime, file_response.content, instance_id)
                 )
-
-        if len(final_images_with_dates) == 0:
-            return [], latest_acq_time
 
         images_with_dates.sort(key=lambda x: x[0])
         latest_image = images_with_dates[-1]

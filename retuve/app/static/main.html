@@ -280,6 +280,7 @@
         function updateFileList(files, update) {
             const fileListElement = document.querySelector('.file-list-dynamic');
             fileListElement.querySelectorAll('button').forEach(button => button.remove());
+            files.sort((a, b) => b.file_id.localeCompare(a.file_id));
 
             files.forEach(file => {
                 const button = document.createElement('button');
