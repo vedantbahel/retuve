@@ -20,10 +20,22 @@ import torch
 from radstract.data.dicom import DicomTypes
 
 from retuve.keyphrases.config import Config
-from retuve.keyphrases.enums import (ACASplit, Colors, CRFem, Curvature,
-                                     MetricUS, MidLineMove, OperationType)
-from retuve.keyphrases.subconfig import (APIConfig, BatchConfig, HipConfig,
-                                         TrakConfig, VisualsConfig)
+from retuve.keyphrases.enums import (
+    ACASplit,
+    Colors,
+    CRFem,
+    Curvature,
+    MetricUS,
+    MidLineMove,
+    OperationType,
+)
+from retuve.keyphrases.subconfig import (
+    APIConfig,
+    BatchConfig,
+    HipConfig,
+    TrakConfig,
+    VisualsConfig,
+)
 
 visuals = VisualsConfig(
     font_h1=None,
@@ -58,9 +70,9 @@ hip = HipConfig(
     measurements=[
         MetricUS.ALPHA,
         MetricUS.COVERAGE,
-        MetricUS.CURVATURE,
-        MetricUS.CENTERING_RATIO,
-        MetricUS.ACA,
+        # MetricUS.CURVATURE,
+        # MetricUS.CENTERING_RATIO,
+        # MetricUS.ACA,
     ],
     z_gap=2.5,
     display_frame_no=True,
@@ -68,7 +80,7 @@ hip = HipConfig(
     draw_midline=False,
     display_fem_guess=False,
     draw_side_metainfo=False,
-    allow_flipping=True,
+    allow_flipping=False,
     display_bad_frame_reasons=False,
 )
 

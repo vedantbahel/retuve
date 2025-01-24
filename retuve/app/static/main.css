@@ -306,6 +306,11 @@ input[type="submit"],
     margin-top: 20px;
 }
 
+.back-button-live {
+    max-width: 150px;
+    height: fit-content;
+}
+
 a.upload-back-button {
     background-color: #0b375b !important;
     color: #fff !important;
@@ -351,4 +356,10 @@ a.upload-back-button {
     text-decoration: none;
     display: inline-block;
     margin-top: 20px;
+}
+
+.inter-gap {
+    margin-top: 40px;
+    float: right;
+    text-align: center;
 }

@@ -25,8 +25,11 @@ from fastapi import APIRouter, File, Form, HTTPException, Request, UploadFile
 
 from retuve import __version__ as retuve_version
 from retuve.app.classes import Metric2D, Metric3D, ModelResponse
-from retuve.app.helpers import (RESULTS_DIR, RESULTS_URL_ACCESS,
-                                analyze_validation)
+from retuve.app.helpers import (
+    RESULTS_DIR,
+    RESULTS_URL_ACCESS,
+    analyze_validation,
+)
 from retuve.funcs import retuve_run
 from retuve.keyphrases.config import Config
 
@@ -103,20 +106,26 @@ def analyse_image(
         if result.video_clip:
             video_path = f"{RESULTS_DIR}/{filename}.mp4"
             result.video_clip.write_videofile(video_path)
-            video_path = video_path.replace(RESULTS_DIR, f"{RESULTS_URL_ACCESS}/{config.name}")
+            video_path = video_path.replace(
+                RESULTS_DIR, f"{RESULTS_URL_ACCESS}/{config.name}"
+            )
 
         if result.visual_3d:
             figure_path = f"{RESULTS_DIR}/{filename}.html"
             result.visual_3d.write_html(figure_path)
-            figure_path = figure_path.replace(RESULTS_DIR, f"{RESULTS_URL_ACCESS}/{config.name}")
+            figure_path = figure_path.replace(
+                RESULTS_DIR, f"{RESULTS_URL_ACCESS}/{config.name}"
+            )
 
         if result.image:
             img_path = f"{RESULTS_DIR}/{filename}.jpg"
             result.image.save(img_path)
-            img_path = img_path.replace(RESULTS_DIR, f"{RESULTS_URL_ACCESS}/{config.name}")
+            img_path = img_path.replace(
+                RESULTS_DIR, f"{RESULTS_URL_ACCESS}/{config.name}"
+            )
 
         if result.hip_datas:
-            for metric in result.hip_datas.metrics:
+            for i, metric in enumerate(result.hip_datas.metrics):
                 metrics3d.append(
                     Metric3D(
                         name=metric.name,
@@ -130,7 +139,7 @@ def analyse_image(
             notes = str(result.hip_datas.recorded_error)
 
         if result.image:
-            for metric in result.hip.metrics:
+            for i, metric in enumerate(result.hip.metrics):
                 metrics2d.append(
                     Metric2D(name=metric.name, value=metric.value)
                 )

@@ -117,7 +117,7 @@ def get_3d_metrics_and_visuals(
             config,
         )
 
-    if aca:
+    if aca and MetricUS.ACA in config.hip.measurements:
         aca_metric = Metric3D(
             name=MetricUS.ACA,
             graf=aca[Side.GRAF],
@@ -126,7 +126,7 @@ def get_3d_metrics_and_visuals(
         )
         hip_datas.metrics.append(aca_metric)
 
-    if c_ratio:
+    if c_ratio and MetricUS.CENTERING_RATIO in config.hip.measurements:
         c_ratio = Metric3D(
             name=MetricUS.CENTERING_RATIO,
             full=c_ratio,

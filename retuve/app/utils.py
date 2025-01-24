@@ -5,8 +5,14 @@ import os
 import secrets
 from datetime import datetime
 
-from fastapi import (APIRouter, Depends, Header, HTTPException, Request,
-                     Response)
+from fastapi import (
+    APIRouter,
+    Depends,
+    Header,
+    HTTPException,
+    Request,
+    Response,
+)
 from httpx import AsyncClient
 
 from retuve.funcs import retuve_run
@@ -150,10 +156,7 @@ async def get_sorted_dicom_images(
                             )
 
                             images_with_dates.append(
-                                (
-                                    acq_datetime,
-                                    instance_id,
-                                )
+                                (acq_datetime, instance_id, metadata)
                             )
 
         final_images_with_dates = []
@@ -161,7 +164,7 @@ async def get_sorted_dicom_images(
         if len(images_with_dates) == 0:
             return [], latest_acq_time
 
-        for acq_datetime, instance_id in images_with_dates:
+        for acq_datetime, instance_id, metadata in images_with_dates:
             if acq_datetime > latest_acq_time:
                 file_response = await client.get(
                     f"{orthanc_url}/instances/{instance_id}/file",
@@ -170,7 +173,8 @@ async def get_sorted_dicom_images(
 
                 # hash the main instance_id to be smaller
                 small_id = consistent_hash(instance_id, 10**8)
-                instance_id = f"{acq_datetime.strftime('%Y-%m-%d-%H:%M:%S')} ID-{small_id}"
+                patient_id_real = metadata.get("PatientID")
+                instance_id = f"{acq_datetime.strftime('%Y-%m-%d-%H:%M:%S')} Patient-{patient_id_real} ID-{small_id}"
 
                 latest_acq_time = max(latest_acq_time, acq_datetime)
 
@@ -189,10 +193,10 @@ async def get_sorted_dicom_images(
 
         instance_id = latest_image[1]
         acq_datetime = latest_image[0]
+        metadata = latest_image[2]
         small_id = consistent_hash(instance_id, 10**8)
-        instance_id = (
-            f"{acq_datetime.strftime('%Y-%m-%d-%H:%M:%S')} ID-{small_id}"
-        )
+        patient_id_real = metadata.get("PatientID")
+        instance_id = f"{acq_datetime.strftime('%Y-%m-%d-%H:%M:%S')} Patient-{patient_id_real} ID-{small_id}"
 
         latest_image = (
             acq_datetime,
