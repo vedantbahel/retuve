@@ -64,7 +64,10 @@ pdoc_create = "pdoc -d numpy -o web retuve --logo https://files.mcaq.me/52kj1.pn
 docs = [{ cmd = "poe pdoc_create" }]
 viewdocs = [{ cmd = "poe docs" }, { cmd = "npx http-server -o ./web/" }]
 examples = "pytest -n 4 --vv --dist=loadgroup ./examples/_test.py"
-testgen = "poetry run python ./tests/_get_test_data.py"
+testgen = [
+    { cmd = "poetry install" },
+    { cmd = "poetry run python ./tests/_get_test_data.py" },
+]
 help_real.shell = """
     echo
     echo Retuve Script Help

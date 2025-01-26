@@ -20,7 +20,7 @@ Import them directly from the retuve package.
 We don't store them, so that the Retuve UI does not use them.
 """
 
-from retuve.keyphrases.enums import OperationType
+from retuve.keyphrases.enums import MetricUS, OperationType
 
 from .config import base_config
 
@@ -44,3 +44,12 @@ default_xray.visuals.bounding_box_thickness = 7
 default_xray.register(name="default_xray", store=False, silent=True)
 
 live = default_US.get_copy()
+
+test_default_US = default_US.get_copy()
+test_default_US.hip.measurements = [
+    MetricUS.ALPHA,
+    MetricUS.COVERAGE,
+    MetricUS.CURVATURE,
+    MetricUS.CENTERING_RATIO,
+    MetricUS.ACA,
+]

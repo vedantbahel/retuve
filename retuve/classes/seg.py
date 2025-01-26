@@ -40,6 +40,7 @@ import numpy as np
 import numpy.typing as npt
 from PIL import Image
 from radstract.data.colors import get_unique_colours
+
 from retuve.hip_us.classes.enums import HipLabelsUS
 from retuve.hip_xray.classes import HipLabelsXray
 
@@ -134,6 +135,8 @@ class SegObject:
         Returns the area of the object.
         """
         # Use the mask to calculate the area
+        if self.mask is None:
+            return 0
         return np.sum(self.mask[:, :, 0] == 255)
 
 

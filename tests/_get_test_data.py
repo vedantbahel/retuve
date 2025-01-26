@@ -19,7 +19,6 @@ import pickle
 import shutil
 from datetime import datetime
 from difflib import unified_diff
-from hmac import new
 
 import open3d as o3d
 import pydicom
@@ -27,18 +26,12 @@ import yaml
 from PIL import Image
 from radstract.data.dicom import convert_dicom_to_images
 
-from retuve.defaults.hip_configs import default_US, default_xray
-from retuve.defaults.manual_seg import (
-    manual_predict_us,
-    manual_predict_us_dcm,
-    manual_predict_xray,
-)
-from retuve.funcs import (
-    analyse_hip_2DUS,
-    analyse_hip_2DUS_sweep,
-    analyse_hip_3DUS,
-    analyse_hip_xray_2D,
-)
+from retuve.defaults.hip_configs import default_xray, test_default_US
+from retuve.defaults.manual_seg import (manual_predict_us,
+                                        manual_predict_us_dcm,
+                                        manual_predict_xray)
+from retuve.funcs import (analyse_hip_2DUS, analyse_hip_2DUS_sweep,
+                          analyse_hip_3DUS, analyse_hip_xray_2D)
 from retuve.testdata import Cases, download_case
 
 # remove if exists and create test-data dir
@@ -55,11 +48,11 @@ dcm_file, seg_file = download_case(
 dcm = pydicom.dcmread(dcm_file)
 
 dcm = pydicom.dcmread(dcm_file)
-default_US.test_data_passthrough = True
+test_default_US.test_data_passthrough = True
 
 hip_datas, video_clip, visual_3d, dev_metrics = analyse_hip_3DUS(
     dcm,
-    keyphrase=default_US,
+    keyphrase=test_default_US,
     modes_func=manual_predict_us_dcm,
     modes_func_kwargs_dict={"seg": seg_file},
 )
@@ -95,7 +88,7 @@ o3d.io.write_triangle_mesh(
 )
 
 # Save json
-json_file_3dus = hip_datas.json_dump(default_US)
+json_file_3dus = hip_datas.json_dump(test_default_US)
 
 # Save the data
 with gzip.open(f"{test_data_dir}/hip_datas_us.pkl.gz", "wb") as f:
@@ -174,7 +167,7 @@ with gzip.open(f"{test_data_dir}/seg_results_xray.pkl.gz", "wb") as f:
 
 hip_datas, img, dev_metrics, _ = analyse_hip_2DUS_sweep(
     dcm=dcm,
-    keyphrase=default_US,
+    keyphrase=test_default_US,
     modes_func=manual_predict_us_dcm,
     modes_func_kwargs_dict={"seg": seg_file},
 )
@@ -182,7 +175,7 @@ hip_datas, img, dev_metrics, _ = analyse_hip_2DUS_sweep(
 # save 2d image
 img.save(f"{test_data_dir}/img_2dus_sweep.jpg")
 
-json_file_us_sweep = hip_datas.json_dump(default_US, dev_metrics)
+json_file_us_sweep = hip_datas.json_dump(test_default_US, dev_metrics)
 
 images = convert_dicom_to_images(dcm)
 
@@ -190,7 +183,7 @@ FRAME = 4
 
 hip_data, img, dev_metrics = analyse_hip_2DUS(
     img=images[FRAME],
-    keyphrase=default_US,
+    keyphrase=test_default_US,
     modes_func=manual_predict_us,
     modes_func_kwargs_dict={"seg": seg_file, "seg_idx": FRAME},
 )
@@ -198,7 +191,7 @@ hip_data, img, dev_metrics = analyse_hip_2DUS(
 # save 2d image
 img.save(f"{test_data_dir}/img_2dus.jpg")
 
-json_file_us = hip_data.json_dump(default_US, dev_metrics)
+json_file_us = hip_data.json_dump(test_default_US, dev_metrics)
 
 
 # ==============================================================================

@@ -15,7 +15,6 @@
 import copy
 
 import pytest
-from sklearn import metrics
 
 from retuve.hip_us.classes.general import HipDatasUS
 

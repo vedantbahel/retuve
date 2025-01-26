@@ -268,6 +268,7 @@ def analyse_hip_3DUS(
                 "This is not yet supported. Please use the seg operation type."
             )
     except Exception as e:
+        raise e
         ulogger.error(f"Critical Error: {e}")
         return None, None, None, None
 

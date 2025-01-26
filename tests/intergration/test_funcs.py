@@ -19,7 +19,7 @@ import yaml
 from PIL import Image
 from radstract.data.dicom import convert_dicom_to_images
 
-from retuve.defaults.hip_configs import default_US, default_xray
+from retuve.defaults.hip_configs import default_xray, test_default_US
 from retuve.defaults.manual_seg import (
     manual_predict_us,
     manual_predict_us_dcm,
@@ -42,12 +42,12 @@ def test_analyse_hip_3DUS(us_file_path, metrics_3d_us):
 
     hip_datas, *_ = analyse_hip_3DUS(
         dcm,
-        keyphrase=default_US,
+        keyphrase=test_default_US,
         modes_func=manual_predict_us_dcm,
         modes_func_kwargs_dict={"seg": seg_file},
     )
 
-    metrics = hip_datas.json_dump(default_US)
+    metrics = hip_datas.json_dump(test_default_US)
     del metrics["recorded_error"]
     del metrics_3d_us["recorded_error"]
 
@@ -59,7 +59,7 @@ def test_retuve_run_3DUS(us_file_path, metrics_3d_us):
 
     retuve_result = retuve_run(
         hip_mode=HipMode.US3D,
-        config=default_US,
+        config=test_default_US,
         modes_func=manual_predict_us_dcm,
         modes_func_kwargs_dict={"seg": seg_file},
         file=us_file_path,
@@ -107,7 +107,7 @@ def test_analyse_hip_2DUS(us_file_path, metrics_2d_us, expected_us_metrics):
 
     hip_data, _, dev_metrics = analyse_hip_2DUS(
         images[expected_us_metrics["frame_with_results"]],
-        keyphrase=default_US,
+        keyphrase=test_default_US,
         modes_func=manual_predict_us,
         modes_func_kwargs_dict={
             "seg": seg_file,
@@ -115,7 +115,7 @@ def test_analyse_hip_2DUS(us_file_path, metrics_2d_us, expected_us_metrics):
         },
     )
 
-    metrics = hip_data.json_dump(default_US, dev_metrics)
+    metrics = hip_data.json_dump(test_default_US, dev_metrics)
 
     assert metrics == metrics_2d_us
 
@@ -127,11 +127,11 @@ def test_analyse_hip_2DUS_sweep(us_file_path, metrics_2d_sweep):
 
     hip_data, _, dev_metrics, _ = analyse_hip_2DUS_sweep(
         dcm,
-        keyphrase=default_US,
+        keyphrase=test_default_US,
         modes_func=manual_predict_us_dcm,
         modes_func_kwargs_dict={"seg": seg_file},
     )
 
-    metrics = hip_data.json_dump(default_US, dev_metrics)
+    metrics = hip_data.json_dump(test_default_US, dev_metrics)
 
     assert metrics == metrics_2d_sweep

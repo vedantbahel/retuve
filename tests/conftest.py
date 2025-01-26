@@ -29,7 +29,7 @@ from PIL import Image, ImageOps
 from xdist.scheduler.loadfile import LoadFileScheduling
 
 from retuve.classes.seg import SegFrameObjects, SegObject
-from retuve.defaults.hip_configs import default_US, default_xray
+from retuve.defaults.hip_configs import default_xray, test_default_US
 from retuve.draw import TARGET_SIZE
 from retuve.hip_us.classes.enums import HipLabelsUS
 from retuve.hip_us.classes.general import HipDatasUS, LandmarksUS
@@ -212,7 +212,7 @@ def img_shape_us(results_us_0) -> tuple:
 
 @pytest.fixture
 def config_us() -> Config:
-    return default_US
+    return test_default_US
 
 
 @pytest.fixture

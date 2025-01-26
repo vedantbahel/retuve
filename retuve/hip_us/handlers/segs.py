@@ -45,15 +45,21 @@ def remove_bad_objs(
             )[0]
         ]
 
-    # replace each value with the first element of the list
+    # replace each value with the largest object
     for k, v in hip_objs.items():
         if len(v) != 0:
-            hip_objs[k] = v[0]
+            hip_objs[k] = max(v, key=lambda seg_obj: seg_obj.area())
         else:
             hip_objs[k] = SegObject(empty=True)
 
     illium = hip_objs.get(HipLabelsUS.IlliumAndAcetabulum, None)
     if illium and illium.box is not None and illium.box[0] > img.shape[1] / 2:
         hip_objs[HipLabelsUS.IlliumAndAcetabulum] = SegObject(empty=True)
+
+    fem_head = hip_objs.get(HipLabelsUS.FemoralHead, None)
+    # Femoral Heads should be at least 2.5%
+    expected_min_fem_size = img.shape[0] * img.shape[1] * 0.025
+    if fem_head and fem_head.area() < expected_min_fem_size:
+        hip_objs[HipLabelsUS.FemoralHead] = SegObject(empty=True)
 
     return hip_objs

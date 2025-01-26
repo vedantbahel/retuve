@@ -20,22 +20,10 @@ import torch
 from radstract.data.dicom import DicomTypes
 
 from retuve.keyphrases.config import Config
-from retuve.keyphrases.enums import (
-    ACASplit,
-    Colors,
-    CRFem,
-    Curvature,
-    MetricUS,
-    MidLineMove,
-    OperationType,
-)
-from retuve.keyphrases.subconfig import (
-    APIConfig,
-    BatchConfig,
-    HipConfig,
-    TrakConfig,
-    VisualsConfig,
-)
+from retuve.keyphrases.enums import (ACASplit, Colors, CRFem, Curvature,
+                                     MetricUS, MidLineMove, OperationType)
+from retuve.keyphrases.subconfig import (APIConfig, BatchConfig, HipConfig,
+                                         TrakConfig, VisualsConfig)
 
 visuals = VisualsConfig(
     font_h1=None,

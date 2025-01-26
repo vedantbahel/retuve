@@ -30,6 +30,8 @@ from retuve.hip_us.classes.general import HipDatasUS
 from retuve.keyphrases.enums import MetricUS
 from retuve.logs import ulogger
 
+DO_CALIBRATION = False
+
 
 def _get_left_apex_angle(hip) -> bool:
     """
@@ -229,7 +231,7 @@ def graf_frame_algo(
         2,
     )
 
-    if file_id:
+    if file_id and DO_CALIBRATION:
         data = {
             "alpha_value": alpha_value,
             "line_flatness_value": line_flatness_value,
