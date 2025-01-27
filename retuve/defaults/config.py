@@ -25,6 +25,8 @@ from retuve.keyphrases.enums import (ACASplit, Colors, CRFem, Curvature,
 from retuve.keyphrases.subconfig import (APIConfig, BatchConfig, HipConfig,
                                          TrakConfig, VisualsConfig)
 
+RETUVE_DIR = "./retuve-data"
+
 visuals = VisualsConfig(
     font_h1=None,
     font_h2=None,
@@ -74,15 +76,15 @@ hip = HipConfig(
 
 trak = TrakConfig(
     datasets=[
-        f"uploaded",
+        f"{RETUVE_DIR}/default/uploaded",
     ],
 )
 
 api = APIConfig(
-    savedir=f"batch",
+    savedir=f"{RETUVE_DIR}/default/savedir",
     url="http://localhost:8000",
-    db_path=f"trak.db",
-    upload_dir="uploaded",
+    db_path=f"{RETUVE_DIR}/default/trak.db",
+    upload_dir=f"{RETUVE_DIR}/default/uploaded",
     hippa_logging_file="hippa.log",
     api_token=None,
     origins=["http://localhost:8000"],
