@@ -27,6 +27,9 @@ scikit-learn = "^1.5.1"
 pyyaml = "^6.0.2"
 filelock = "^3.16.1"
 pytest-xdist = "^3.6.1"
+fastapi = "^0.115.7"
+httpx = "^0.28.1"
+python-multipart = "^0.0.20"
 
 [build-system]
 requires = ["poetry-core"]
@@ -36,10 +39,6 @@ build-backend = "poetry.core.masonry.api"
 name = "pytorch"
 url = "https://download.pytorch.org/whl/cu121"
 priority = "explicit"
-
-[[tool.poetry.source]]
-name = "PyPI"
-priority = "primary"
 
 [tool.coverage.run]
 # Specify the directory and filename for the coverage data
