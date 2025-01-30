@@ -15,7 +15,6 @@
 import os
 
 import pydicom
-import yaml
 from PIL import Image
 from radstract.data.dicom import convert_dicom_to_images
 
