@@ -113,6 +113,7 @@ def run_single(
 
     except Exception as e:
         e = traceback.format_exc()
+        ulogger.error(f"Error processing file {file_name}: {e}")
         return e
 
 

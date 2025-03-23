@@ -37,6 +37,8 @@ def remove_bad_objs(
     :param img: Image object.
 
     """
+
+    fem_head_ilium_wrong_way_round = False
     if len(hip_objs[HipLabelsUS.IlliumAndAcetabulum]) > 1:
         hip_objs[HipLabelsUS.IlliumAndAcetabulum] = [
             sorted(
@@ -52,14 +54,21 @@ def remove_bad_objs(
         else:
             hip_objs[k] = SegObject(empty=True)
 
+    fem_head = hip_objs.get(HipLabelsUS.FemoralHead, None)
+
     illium = hip_objs.get(HipLabelsUS.IlliumAndAcetabulum, None)
     if illium and illium.box is not None and illium.box[0] > img.shape[1] / 2:
-        hip_objs[HipLabelsUS.IlliumAndAcetabulum] = SegObject(empty=True)
+        # check if the femoral head box is left of the illium box
+        if (
+            fem_head
+            and fem_head.box is not None
+            and illium.box[0] > fem_head.box[0]
+        ):
+            fem_head_ilium_wrong_way_round = True
 
-    fem_head = hip_objs.get(HipLabelsUS.FemoralHead, None)
     # Femoral Heads should be at least 2.5%
     expected_min_fem_size = img.shape[0] * img.shape[1] * 0.025
     if fem_head and fem_head.area() < expected_min_fem_size:
         hip_objs[HipLabelsUS.FemoralHead] = SegObject(empty=True)
 
-    return hip_objs
+    return hip_objs, fem_head_ilium_wrong_way_round

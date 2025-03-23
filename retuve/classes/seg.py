@@ -139,6 +139,39 @@ class SegObject:
             return 0
         return np.sum(self.mask[:, :, 0] == 255)
 
+    def flip_horizontally(self, img_width: int):
+        """
+        Flips the object horizontally.
+
+        :param img_width: Width of the image.
+        """
+        if self.empty:
+            return
+
+        if self.box is not None:
+            self.box = (
+                img_width - self.box[2],
+                img_width - self.box[0],
+                self.box[1],
+                self.box[3],
+            )
+
+        if self.points is not None:
+            self.points = [(img_width - x, y) for x, y in self.points]
+
+        if self.midline is not None:
+            self.midline = np.array(
+                [(y, img_width - x) for y, x in self.midline]
+            )
+
+        if self.midline_moved is not None:
+            self.midline_moved = np.array(
+                [(y, img_width - x) for y, x in self.midline_moved]
+            )
+
+        if self.mask is not None:
+            self.mask = np.flip(self.mask, axis=1)
+
 
 class SegFrameObjects:
     """

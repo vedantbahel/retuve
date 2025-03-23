@@ -83,7 +83,7 @@ def test_remove_bad_objs(single_illium_objs):
     hip_objs_before, img = single_illium_objs
     hip_objs = copy.deepcopy(hip_objs_before)
 
-    hip_objs = remove_bad_objs(hip_objs, img)
+    hip_objs, _ = remove_bad_objs(hip_objs, img)
     assert isinstance(hip_objs[HipLabelsUS.IlliumAndAcetabulum], SegObject)
     assert (
         hip_objs[HipLabelsUS.IlliumAndAcetabulum].box
@@ -95,7 +95,7 @@ def test_remove_bad_objs_multiple(multiple_illium_objs):
     hip_objs_before, img = multiple_illium_objs
     hip_objs = copy.deepcopy(hip_objs_before)
 
-    hip_objs = remove_bad_objs(hip_objs, img)
+    hip_objs, _ = remove_bad_objs(hip_objs, img)
     assert isinstance(hip_objs[HipLabelsUS.IlliumAndAcetabulum], SegObject)
 
     # check the right object was removed
