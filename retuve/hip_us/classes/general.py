@@ -21,7 +21,6 @@ from typing import Dict, List, Tuple, Union
 from moviepy.video.io.ImageSequenceClip import ImageSequenceClip
 from plotly.graph_objs import Figure
 from radstract.data.nifti import NIFTI
-
 from retuve.classes.general import RecordedError
 from retuve.classes.metrics import Metric2D, Metric3D
 from retuve.hip_us.classes.dev import DevMetricsUS
@@ -90,6 +89,19 @@ class LandmarksUS:
             f"LandmarksUS({self.left}, {self.right}, {self.apex}, "
             f"{self.point_D}, {self.point_d}, {self.mid_cov_point})"
         )
+
+    def to_dict(self) -> Dict[str, Tuple[int, int]]:
+        """
+        Returns the landmarks as a dictionary.
+        """
+        return {
+            "left": self.left,
+            "right": self.right,
+            "apex": self.apex,
+            "point_D": self.point_D,
+            "point_d": self.point_d,
+            "mid_cov_point": self.mid_cov_point,
+        }
 
 
 class HipDataUS:

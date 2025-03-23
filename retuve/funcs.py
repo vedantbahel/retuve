@@ -38,8 +38,10 @@ from retuve.hip_us.handlers.side import set_side
 from retuve.hip_us.metrics.dev import get_dev_metrics
 from retuve.hip_us.modes.landmarks import landmarks_2_metrics_us
 from retuve.hip_us.modes.seg import pre_process_segs_us, segs_2_landmarks_us
-from retuve.hip_us.multiframe import (find_graf_plane,
-                                      get_3d_metrics_and_visuals)
+from retuve.hip_us.multiframe import (
+    find_graf_plane,
+    get_3d_metrics_and_visuals,
+)
 from retuve.hip_xray.classes import DevMetricsXRay, HipDataXray, LandmarksXRay
 from retuve.hip_xray.draw import draw_hips_xray
 from retuve.hip_xray.landmarks import landmarks_2_metrics_xray
@@ -268,7 +270,6 @@ def analyse_hip_3DUS(
                 "This is not yet supported. Please use the seg operation type."
             )
     except Exception as e:
-        raise e
         ulogger.error(f"Critical Error: {e}")
         return None, None, None, None
 
@@ -344,6 +345,7 @@ def analyse_hip_2DUS(
         List[SegFrameObjects],
     ],
     modes_func_kwargs_dict: Dict[str, Any],
+    return_seg_info: bool = False,
 ) -> Tuple[HipDataUS, Image.Image, DevMetricsUS]:
     """
     Analyze a 2D Ultrasound Hip
@@ -374,6 +376,9 @@ def analyse_hip_2DUS(
     hip = hip_datas[0]
 
     image = Image.fromarray(image)
+
+    if return_seg_info:
+        hip.seg_info = results
 
     return hip, image, hip_datas.dev_metrics
 
@@ -529,7 +534,7 @@ def retuve_run(
             visual_3d=visual_3d,
         )
     elif hip_mode == HipMode.US2D:
-        file = Image.open(file)
+        file = Image.open(file).convert("RGB")
         hip, image, dev_metrics = analyse_hip_2DUS(
             file, config, modes_func, modes_func_kwargs_dict
         )

@@ -28,6 +28,7 @@ from retuve.classes.seg import (
     MidLine,
     NDArrayImg_NxNx3_AllWhite,
     SegFrameObjects,
+    SegObject,
 )
 from retuve.hip_us.classes.enums import HipLabelsUS
 from retuve.hip_us.classes.general import LandmarksUS
@@ -100,13 +101,13 @@ def segs_2_landmarks_us(
     """
     hip_landmarks = []
     timings = []
+    hip_objs_list = []
+    fem_head_ilium_wrong_way_round = 0
 
     for seg_frame_objs in results:
-        start = time.time()
-        landmarks = LandmarksUS()
 
         if all(seg_obj.empty for seg_obj in seg_frame_objs):
-            hip_landmarks.append(landmarks)
+            hip_objs_list.append(None)
             continue
 
         hip_objs = {
@@ -118,7 +119,44 @@ def segs_2_landmarks_us(
         for seg_obj in seg_frame_objs:
             hip_objs[seg_obj.cls].append(seg_obj)
 
-        hip_objs = remove_bad_objs(hip_objs, seg_frame_objs.img)
+        hip_objs, wrong_way_round = remove_bad_objs(
+            hip_objs, seg_frame_objs.img
+        )
+        if wrong_way_round:
+            fem_head_ilium_wrong_way_round += 1
+
+        hip_objs_list.append(hip_objs)
+
+    if fem_head_ilium_wrong_way_round > 5:
+        # Flip images
+        for seg_frame_objs in results:
+            seg_frame_objs.img = cv2.flip(seg_frame_objs.img, 1)
+
+        for hip_objs in hip_objs_list:
+            if hip_objs is None:
+                continue
+
+            for seg_obj in hip_objs.values():
+                seg_obj.flip_horizontally(results[0].img.shape[1])
+
+            ilium = hip_objs.get(HipLabelsUS.IlliumAndAcetabulum, None)
+
+            if (
+                ilium is not None
+                and ilium.box is not None
+                and ilium.box[0] > results[0].img.shape[1] / 2
+            ):
+                hip_objs[HipLabelsUS.IlliumAndAcetabulum] = SegObject(
+                    empty=True
+                )
+
+    for seg_frame_objs, hip_objs in zip(results, hip_objs_list):
+        start = time.time()
+
+        landmarks = LandmarksUS()
+        if hip_objs is None:
+            hip_landmarks.append(landmarks)
+            continue
 
         # set the seg_frame_objs to only have the good seg_objs
         seg_frame_objs.seg_objects = [
