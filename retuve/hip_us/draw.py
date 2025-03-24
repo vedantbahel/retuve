@@ -24,6 +24,7 @@ from typing import List, Tuple
 import cv2
 import numpy as np
 import plotly.graph_objects as go
+from attr import has
 from PIL import Image, ImageOps
 from radstract.data.nifti import NIFTI, convert_images_to_nifti_labels
 
@@ -115,7 +116,7 @@ def draw_hips_us(
             )
 
         graf_conf = None
-        if hip_datas.graf_confs:
+        if hasattr(hip_datas, "graf_confs"):
             graf_conf = hip_datas.graf_confs[hip.frame_no]
 
         overlay, is_graf = draw_other(
