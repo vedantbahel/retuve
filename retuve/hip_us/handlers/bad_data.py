@@ -22,6 +22,7 @@ import numpy as np
 
 from retuve.hip_us.classes.general import HipDatasUS, HipDataUS
 from retuve.hip_us.metrics.alpha import bad_alpha
+from retuve.hip_us.metrics.coverage import bad_coverage
 from retuve.keyphrases.config import Config
 from retuve.keyphrases.enums import HipMode
 
@@ -123,7 +124,9 @@ def handle_bad_frames(hip_datas: HipDatasUS, config: Config) -> HipDatasUS:
 
     bad_frame_reasons = {}
 
-    for i, hip in enumerate(hip_datas):
+    for i, (hip, rejection_reasons) in enumerate(
+        zip(hip_datas, hip_datas.all_seg_rejection_reasons)
+    ):
 
         empty_hip = HipDataUS(
             frame_no=hip.frame_no,
@@ -132,9 +135,9 @@ def handle_bad_frames(hip_datas: HipDatasUS, config: Config) -> HipDatasUS:
         if not keep[i]:
             hip_datas[i] = empty_hip
             if config.batch.hip_mode == HipMode.US2DSW:
-                bad_frame_reasons[i] = "Not Marked"
-            else:
-                bad_frame_reasons[i] = "Not Marked/Outlier"
+                bad_frame_reasons[i] = " ".join(rejection_reasons)
+                if not rejection_reasons:
+                    bad_frame_reasons[i] = "Not Enough Data"
             continue
 
         if (not hip.metrics) or all(
@@ -149,9 +152,19 @@ def handle_bad_frames(hip_datas: HipDatasUS, config: Config) -> HipDatasUS:
             bad_frame_reasons[i] = "No Landmarks"
             continue
 
-        if bad_alpha(hip) or not left_apex_line_flat(hip):
+        if bad_alpha(hip):
             hip_datas[i] = empty_hip
-            bad_frame_reasons[i] = "Bad Alpha/Line not Flat"
+            bad_frame_reasons[i] = "Alpha Angle Non-Sensical"
+            continue
+
+        if not left_apex_line_flat(hip):
+            hip_datas[i] = empty_hip
+            bad_frame_reasons[i] = "Ilium Line not Flat"
+            continue
+
+        if bad_coverage(hip):
+            hip_datas[i] = empty_hip
+            bad_frame_reasons[i] = "Coverage Value Non-Sensical"
             continue
 
         if apex_right_points_too_close(hip):

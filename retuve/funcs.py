@@ -38,10 +38,8 @@ from retuve.hip_us.handlers.side import set_side
 from retuve.hip_us.metrics.dev import get_dev_metrics
 from retuve.hip_us.modes.landmarks import landmarks_2_metrics_us
 from retuve.hip_us.modes.seg import pre_process_segs_us, segs_2_landmarks_us
-from retuve.hip_us.multiframe import (
-    find_graf_plane,
-    get_3d_metrics_and_visuals,
-)
+from retuve.hip_us.multiframe import (find_graf_plane,
+                                      get_3d_metrics_and_visuals)
 from retuve.hip_xray.classes import DevMetricsXRay, HipDataXray, LandmarksXRay
 from retuve.hip_xray.draw import draw_hips_xray
 from retuve.hip_xray.landmarks import landmarks_2_metrics_xray
@@ -117,9 +115,10 @@ def process_segs_us(
     )
     results, shape = pre_process_segs_us(results, config)
     pre_edited_results = copy.deepcopy(results)
-    landmarks = segs_2_landmarks_us(results, config)
+    landmarks, all_seg_rejection_reasons = segs_2_landmarks_us(results, config)
     pre_edited_landmarks = copy.deepcopy(landmarks)
     hip_datas = landmarks_2_metrics_us(landmarks, shape, config)
+    hip_datas.all_seg_rejection_reasons = all_seg_rejection_reasons
 
     if config.test_data_passthrough:
         hip_datas.pre_edited_results = pre_edited_results
@@ -280,7 +279,7 @@ def analyse_hip_3DUS(
         ulogger.error(f"No metrics were found in the DICOM {dcm_patient}.")
 
     hip_datas.file_id = file_id
-    hip_datas = find_graf_plane(hip_datas, results)
+    hip_datas = find_graf_plane(hip_datas, results, config=config)
 
     hip_datas, results = set_side(
         hip_datas, results, config.hip.allow_flipping
@@ -425,7 +424,7 @@ def analyse_hip_2DUS_sweep(
         return None, None, None, None
 
     hip_datas = handle_bad_frames(hip_datas, config)
-    hip_datas = find_graf_plane(hip_datas, results)
+    hip_datas = find_graf_plane(hip_datas, results, config)
 
     graf_hip = hip_datas.grafs_hip
     graf_frame = hip_datas.graf_frame

@@ -20,10 +20,23 @@ import torch
 from radstract.data.dicom import DicomTypes
 
 from retuve.keyphrases.config import Config
-from retuve.keyphrases.enums import (ACASplit, Colors, CRFem, Curvature,
-                                     MetricUS, MidLineMove, OperationType)
-from retuve.keyphrases.subconfig import (APIConfig, BatchConfig, HipConfig,
-                                         TrakConfig, VisualsConfig)
+from retuve.keyphrases.enums import (
+    ACASplit,
+    Colors,
+    CRFem,
+    Curvature,
+    GrafSelectionMethod,
+    MetricUS,
+    MidLineMove,
+    OperationType,
+)
+from retuve.keyphrases.subconfig import (
+    APIConfig,
+    BatchConfig,
+    HipConfig,
+    TrakConfig,
+    VisualsConfig,
+)
 
 RETUVE_DIR = "./retuve-data"
 
@@ -72,6 +85,11 @@ hip = HipConfig(
     draw_side_metainfo=False,
     allow_flipping=False,
     display_bad_frame_reasons=False,
+    graf_selection_method=GrafSelectionMethod.MANUAL_FEATURES,
+    graf_selection_func=None,
+    graf_selection_func_args={},
+    display_graf_conf=False,
+    graf_algo_threshold=None,
 )
 
 trak = TrakConfig(

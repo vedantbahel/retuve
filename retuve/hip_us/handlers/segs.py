@@ -38,6 +38,8 @@ def remove_bad_objs(
 
     """
 
+    rejection_reasons = []
+
     fem_head_ilium_wrong_way_round = False
     if len(hip_objs[HipLabelsUS.IlliumAndAcetabulum]) > 1:
         hip_objs[HipLabelsUS.IlliumAndAcetabulum] = [
@@ -70,5 +72,6 @@ def remove_bad_objs(
     expected_min_fem_size = img.shape[0] * img.shape[1] * 0.025
     if fem_head and fem_head.area() < expected_min_fem_size:
         hip_objs[HipLabelsUS.FemoralHead] = SegObject(empty=True)
+        rejection_reasons.append("Femoral Head too small")
 
-    return hip_objs, fem_head_ilium_wrong_way_round
+    return hip_objs, fem_head_ilium_wrong_way_round, rejection_reasons

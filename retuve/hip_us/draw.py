@@ -87,7 +87,7 @@ def draw_hips_us(
     nifti_frames = []
     nifti = None
 
-    for hip, seg_frame_objs in zip(hip_datas, results):
+    for i, (hip, seg_frame_objs) in enumerate(zip(hip_datas, results)):
         start = time.time()
 
         final_hip, final_seg_frame_objs, final_image = resize_data_for_display(
@@ -114,6 +114,10 @@ def draw_hips_us(
                 config.hip.z_gap,
             )
 
+        graf_conf = None
+        if hip_datas.graf_confs:
+            graf_conf = hip_datas.graf_confs[hip.frame_no]
+
         overlay, is_graf = draw_other(
             final_hip,
             final_seg_frame_objs,
@@ -121,6 +125,7 @@ def draw_hips_us(
             overlay,
             final_image.shape[:2],
             config,
+            graf_conf,
         )
 
         if config.hip.display_bad_frame_reasons and hasattr(
@@ -146,7 +151,7 @@ def draw_hips_us(
             nifti_frames.append(test)
 
         # if its the graf frame, append 5 copies
-        repeats = len(image_arrays) // 5 if is_graf else 1
+        repeats = len(results) // 6 if is_graf else 1
         for _ in range(repeats):
             image_arrays.append(img)
 
@@ -179,6 +184,7 @@ def draw_other(
     overlay: Overlay,
     shape: tuple,
     config: Config,
+    graf_conf: float = None,
 ) -> Tuple[Overlay, bool]:
     """
     Draw the other meta information on the image
@@ -188,6 +194,7 @@ def draw_other(
     :param graf_frame: The Graf Frame
     :param overlay: The Overlay
     :param config: The Config
+    :param shape: The Shape of the Image
 
     :return: The Drawn Overlay
     """
@@ -201,7 +208,15 @@ def draw_other(
             header="h1",
         )
 
-    is_graf = hip.frame_no == graf_frame and hip.landmarks
+    if graf_conf is not None and config.hip.display_graf_conf:
+        overlay.draw_text(
+            f"Graf Confidence: {graf_conf:.2f}",
+            shape[0] - 100,
+            0,
+            header="h1",
+        )
+
+    is_graf = hip.frame_no == graf_frame and hip.landmarks is not None
 
     # Check if graf alpha
     if is_graf:
@@ -246,9 +261,7 @@ def draw_other(
     return overlay, is_graf
 
 
-def draw_table(
-    shape: tuple, hip_datas: HipDatasUS
-) -> np.ndarray:
+def draw_table(shape: tuple, hip_datas: HipDatasUS) -> np.ndarray:
     """
     Draw the table of the metrics onto an image
 

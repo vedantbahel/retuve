@@ -103,11 +103,13 @@ def segs_2_landmarks_us(
     timings = []
     hip_objs_list = []
     fem_head_ilium_wrong_way_round = 0
+    all_rejection_reasons = []
 
     for seg_frame_objs in results:
 
         if all(seg_obj.empty for seg_obj in seg_frame_objs):
             hip_objs_list.append(None)
+            all_rejection_reasons.append([])
             continue
 
         hip_objs = {
@@ -119,13 +121,14 @@ def segs_2_landmarks_us(
         for seg_obj in seg_frame_objs:
             hip_objs[seg_obj.cls].append(seg_obj)
 
-        hip_objs, wrong_way_round = remove_bad_objs(
+        hip_objs, wrong_way_round, rejection_reasons = remove_bad_objs(
             hip_objs, seg_frame_objs.img
         )
         if wrong_way_round:
             fem_head_ilium_wrong_way_round += 1
 
         hip_objs_list.append(hip_objs)
+        all_rejection_reasons.append(rejection_reasons)
 
     if fem_head_ilium_wrong_way_round > 5:
         # Flip images
@@ -173,7 +176,7 @@ def segs_2_landmarks_us(
         timings.append(time.time() - start)
 
     log_timings(timings, title="Seg->Landmarking Speed:")
-    return hip_landmarks
+    return hip_landmarks, all_rejection_reasons
 
 
 def pre_process_segs_us(

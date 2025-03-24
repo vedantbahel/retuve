@@ -28,6 +28,7 @@ from retuve.keyphrases.enums import (
     Colors,
     CRFem,
     Curvature,
+    GrafSelectionMethod,
     HipMode,
     MetricUS,
     MidLineMove,
@@ -55,6 +56,11 @@ class HipConfig:
         draw_side_metainfo: bool,
         allow_flipping: bool,
         display_bad_frame_reasons: bool,
+        graf_selection_method: GrafSelectionMethod,
+        graf_selection_func: Any,
+        graf_selection_func_args: Dict[str, Any],
+        display_graf_conf: bool,
+        graf_algo_threshold: float,
     ):
         """
         The Hip Subconfig.
@@ -74,6 +80,11 @@ class HipConfig:
         :param draw_side_metainfo (bool): Draw the side metainfo.
         :param allow_flipping (bool): Allow use of the 3D US Orientaition Algorithm.
         :param display_bad_frame_reasons (bool): Display the bad frame reasons.
+        :param graf_selection_method (GrafSelectionMethod): The graf selection method.
+        :param graf_selection_func (Any): The graf selection func, if needed.
+        :param graf_selection_func_args (dict): The arguments to pass to the graf, if needed.
+        :param display_graf_conf (bool): Display the graf confidence.
+        :param graf_algo_threshold (float): The graf algorithm confidence threshold.
         """
         self.midline_color = midline_color
         self.aca_split = aca_split
@@ -90,6 +101,11 @@ class HipConfig:
         self.draw_side_metainfo = draw_side_metainfo
         self.allow_flipping = allow_flipping
         self.display_bad_frame_reasons = display_bad_frame_reasons
+        self.graf_selection_method = graf_selection_method
+        self.graf_selection_func = graf_selection_func
+        self.graf_selection_func_args = graf_selection_func_args
+        self.display_graf_conf = display_graf_conf
+        self.graf_algo_threshold = graf_algo_threshold
 
 
 class TrakConfig:
