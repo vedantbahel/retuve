@@ -159,9 +159,6 @@ def find_coverage(landmarks: LandmarksUS) -> float:
     if landmarks.mid_cov_point[1] > landmarks.point_D[1]:
         coverage = 0
 
-    if coverage > 1:
-        coverage = 0
-
     return round(coverage, 3)
 
 
@@ -196,3 +193,21 @@ def draw_coverage(hip: HipDataUS, overlay: Overlay, config: Config) -> Overlay:
         )
 
     return overlay
+
+
+def bad_coverage(hip: HipDataUS) -> bool:
+    """
+    Check if the Coverage is bad.
+
+    :param hip: HipDataUS: The Hip Data.
+
+    :return: bool: True if the Coverage is bad.
+    """
+
+    if (
+        hip.get_metric(MetricUS.COVERAGE) < 0
+        or hip.get_metric(MetricUS.COVERAGE) > 1
+    ):
+        return True
+
+    return False

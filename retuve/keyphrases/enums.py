@@ -176,3 +176,12 @@ class Outputs:
     METRICS = "metrics.json"
     VIDEO_CLIP = "video.mp4"
     VISUAL3D = "visual_3d.html"
+
+
+class GrafSelectionMethod:
+    """
+    Graf Frame Selection Methods.
+    """
+
+    MANUAL_FEATURES = "manual_features"
+    OBJ_CLASSIFY = "obj_classify"

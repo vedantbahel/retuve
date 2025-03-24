@@ -172,9 +172,6 @@ def find_alpha_angle(points: LandmarksUS) -> float:
     angle = np.degrees(angle)
     angle = round((180 - angle), 1)
 
-    if angle < 20:
-        return 0
-
     return round(angle, 2)
 
 
@@ -242,7 +239,7 @@ def bad_alpha(hip: HipDataUS) -> bool:
     """
 
     if (
-        hip.get_metric(MetricUS.ALPHA) < 5
+        hip.get_metric(MetricUS.ALPHA) < 20
         or hip.get_metric(MetricUS.ALPHA) > 100
     ):
         return True

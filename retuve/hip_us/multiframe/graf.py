@@ -27,7 +27,8 @@ from filelock import FileLock
 from retuve.classes.seg import SegFrameObjects
 from retuve.hip_us.classes.enums import HipLabelsUS
 from retuve.hip_us.classes.general import HipDatasUS
-from retuve.keyphrases.enums import MetricUS
+from retuve.keyphrases.config import Config
+from retuve.keyphrases.enums import GrafSelectionMethod, MetricUS
 from retuve.logs import ulogger
 
 DO_CALIBRATION = False
@@ -273,15 +274,52 @@ def graf_frame_algo(
 
 
 def find_graf_plane(
-    hip_datas: HipDatasUS, results: List[SegFrameObjects]
+    hip_datas: HipDatasUS, results: List[SegFrameObjects], config: Config
 ) -> HipDatasUS:
     """
     Find the Graf Plane for the hip US module.
 
     :param hip_datas: The hip data.
+    :param results: The results of the segmentation.
+    :param config: The configuration.
 
     :return: The hip data with the Graf Plane.
     """
+
+    hip_datas.graf_confs = []
+
+    if config.hip.graf_selection_method == GrafSelectionMethod.MANUAL_FEATURES:
+        return find_graf_plane_manual_features(hip_datas, results, config)
+
+    elif config.hip.graf_selection_method == GrafSelectionMethod.OBJ_CLASSIFY:
+        raise NotImplementedError(
+            f"Unsupported Graf Selection Method: {config.hip.graf_selection_method}"
+        )
+
+    else:
+        raise NotImplementedError(
+            f"Unsupported Graf Selection Method: {config.hip.graf_selection_method}"
+        )
+
+
+def find_graf_plane_manual_features(
+    hip_datas: HipDatasUS, results: List[SegFrameObjects], config: Config
+) -> HipDatasUS:
+    """
+    Find the Graf Plane for the hip US module.
+
+    :param hip_datas: The hip data.
+    :param results: The results of the segmentation.
+
+    :return: The hip data with the Graf Plane.
+    """
+
+    if config.hip.graf_algo_threshold:
+        GRAF_THRESHOLD = config.hip.graf_algo_threshold
+    else:
+        # NOTE(adamcarthur) - this is so that previous behavior is maintained
+        GRAF_THRESHOLD = 1
+
     any_good_graf_data = [
         (hip_data, seg_frame_objs)
         for hip_data, seg_frame_objs in zip(hip_datas, results)
@@ -309,6 +347,19 @@ def find_graf_plane(
         for hip_data in hip_datas
         if hip_data.get_metric(MetricUS.ALPHA) != 0
     ]
+
+    if len(all_illiums) > 0:
+        hip_datas.graf_confs = [
+            graf_frame_algo(
+                (hip_data, seg_frame_objs),
+                max_alpha,
+                all_illiums[0].frame_no,
+                all_illiums[-1].frame_no,
+                None,
+            )
+            / GRAF_THRESHOLD
+            for hip_data, seg_frame_objs in zip(hip_datas, results)
+        ]
 
     if len(all_illiums) != 0:
         first_illium_frame = all_illiums[0].frame_no
@@ -339,6 +390,13 @@ def find_graf_plane(
         [graf_hip.frame_no],
         key=lambda index: abs(index - center),
     )
+
+    best_conf = hip_datas.graf_confs[graf_frame]
+    if best_conf < 1:
+        ulogger.warning("No high-quality Graf Frames found")
+        hip_datas.recorded_error.append("No High-Quality Graf Frames found.")
+        hip_datas.recorded_error.critical = True
+        return hip_datas
 
     hip_datas.graf_frame = graf_frame
 
