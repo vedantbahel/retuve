@@ -53,7 +53,7 @@ testcap = "pytest -vv --cov=retuve --durations=5 --capture-errors ./tests/unit"
 test = "pytest -vv -n 4 --cov=retuve --durations=5 ./tests"
 test_unit = "pytest -vv -n 4 --cov=retuve --durations=5 ./tests/unit"
 test_intergration = "pytest -vv -n 4 --cov=retuve --durations=5 ./tests/intergration"
-test_all = "pytest -vv -n 4 --cov=retuve --cov-report=xml --dist=loadgroup --durations=5 ./examples/_test.py ./tests"
+test_all = "pytest -vv -n 4 --cov=retuve --cov-branch --cov-report=xml --dist=loadgroup --durations=5 ./examples/_test.py ./tests"
 deadcode = "vulture retuve ./scripts/whitelist.py"
 copiedcode = [{ cmd = "sudo npm install -g jscpd" }, { cmd = "jscpd retuve" }]
 linecount = [

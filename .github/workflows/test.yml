@@ -68,3 +68,4 @@ jobs:
         token: ${{ secrets.CODECOV_TOKEN }} # Set this in your repository secrets
         files: coverage.xml
         name: code-coverage-report
+        fail_ci_if_error: true
