@@ -100,9 +100,7 @@ def apex_right_points_too_close(hip: HipDataUS) -> bool:
         return True
 
     return (
-        np.linalg.norm(
-            np.array(hip.landmarks.right) - np.array(hip.landmarks.apex)
-        )
+        np.linalg.norm(np.array(hip.landmarks.right) - np.array(hip.landmarks.apex))
         < 30
     )
 
@@ -140,9 +138,7 @@ def handle_bad_frames(hip_datas: HipDatasUS, config: Config) -> HipDatasUS:
                     bad_frame_reasons[i] = "Not Enough Data"
             continue
 
-        if (not hip.metrics) or all(
-            metric.value == 0 for metric in hip.metrics
-        ):
+        if (not hip.metrics) or all(metric.value == 0 for metric in hip.metrics):
             hip_datas[i] = empty_hip
             bad_frame_reasons[i] = "No Metrics"
             continue

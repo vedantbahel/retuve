@@ -24,6 +24,7 @@ from typing import List, Tuple
 from retuve.classes.seg import SegFrameObjects
 from retuve.hip_us.classes.enums import HipLabelsUS, Side
 from retuve.hip_us.classes.general import HipDatasUS, HipDataUS
+from retuve.utils import warning_decorator
 
 
 def get_side_metainfo(
@@ -44,9 +45,7 @@ def get_side_metainfo(
     mid = (left[0] + apex[0]) / 2, (left[1] + apex[1]) / 2
 
     illium = [
-        seg_obj
-        for seg_obj in results
-        if seg_obj.cls == HipLabelsUS.IlliumAndAcetabulum
+        seg_obj for seg_obj in results if seg_obj.cls == HipLabelsUS.IlliumAndAcetabulum
     ]
 
     if len(illium) == 0:
@@ -67,15 +66,14 @@ def get_side_metainfo(
     return closest_illium, mid
 
 
-def set_side(
+@warning_decorator(alpha=True)
+def reverse_3dus_orientaition(
     hip_datas: HipDatasUS,
     results: List[SegFrameObjects],
     allow_flipping,
 ) -> Tuple[HipDatasUS, List[SegFrameObjects]]:
     """
-    Set the side for each HipDataUS object in the HipDatasUS object.
-
-    Returns the HipDatasUS object and the results with the Anterior side first.
+    Returns the 3DUS HipDatasUS object and the results with the Anterior side first.
 
     :param hip_datas: HipDatasUS object.
     :param results: List of SegFrameObjects.

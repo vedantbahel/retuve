@@ -30,18 +30,20 @@ LICENSE_NOTICE = """# Copyright 2024 Adam McArthur
 # limitations under the License.
 """
 
+
 def add_license_to_file(filepath):
     """Insert the license notice at the top of the file if not already present."""
-    with open(filepath, 'r') as file:
+    with open(filepath, "r") as file:
         content = file.read()
 
     if LICENSE_NOTICE.strip() in content:
         print(f"License already present in {filepath}. Skipping.")
         return
 
-    with open(filepath, 'w') as file:
+    with open(filepath, "w") as file:
         file.write(LICENSE_NOTICE + "\n" + content)
         print(f"License added to {filepath}.")
+
 
 def process_directory(directory):
     """Process all .py files in the given directory recursively."""
@@ -50,6 +52,7 @@ def process_directory(directory):
             if file.endswith(".py"):
                 filepath = os.path.join(root, file)
                 add_license_to_file(filepath)
+
 
 if __name__ == "__main__":
     target_directories = ["./radstract", "./examples", "./tests"]

@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from importlib.metadata import version
+
 """
 # The first fully Open Source Infant Hip Analysis Package
 
@@ -118,4 +120,30 @@ poe help
 
 """
 
-__version__ = "0.1.0"
+__version__ = version("retuve")
+
+
+def print_disclaimer():
+    message = """
+**Disclaimer:**
+
+This software is an experimental tool for **Research Use Only**.
+It is intended solely for research purposes related to the diagnosis of
+Developmental Dysplasia of the Hip (DDH).
+
+This software has **NOT** been approved as a medical device by any
+regulatory agency in any country. It is not intended for clinical use,
+diagnosis, or treatment.
+
+The software is provided "as is" without any warranty, express or implied.
+Use of this software is at your own risk. The developers and contributors are
+not responsible for any consequences resulting from the use or misuse of this
+software.
+
+Please consult with qualified healthcare professionals for any medical advice
+or diagnosis.
+"""
+    print(message)
+
+
+print_disclaimer()

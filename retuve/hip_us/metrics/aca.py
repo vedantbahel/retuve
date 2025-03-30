@@ -32,6 +32,7 @@ from retuve.hip_us.classes.general import HipDataUS
 from retuve.hip_us.typing import CoordinatesArray3D
 from retuve.keyphrases.config import Config
 from retuve.keyphrases.enums import ACASplit
+from retuve.utils import warning_decorator
 
 
 class SideZ(Enum):
@@ -81,6 +82,7 @@ class Triangle:
         self.color = ACA_COLORS[(apex_side, third)]
 
 
+@warning_decorator(alpha=True)
 def get_aca(
     illium_mesh: o3d.geometry.TriangleMesh,
     apex_points: NDArray[np.float64],
@@ -170,9 +172,7 @@ def get_aca(
         apex_points = copy.deepcopy(np.array(apex_points))
 
         # get the apex point with the closest z value
-        apex_point = apex_points[
-            np.argmin(np.abs(apex_points[:, 2] - centroid[2]))
-        ]
+        apex_point = apex_points[np.argmin(np.abs(apex_points[:, 2] - centroid[2]))]
 
         if centroid[0] < apex_point[0]:
             apex_side = SideZ.LEFT
@@ -237,9 +237,7 @@ def get_aca(
             recorded_error = ""
         except KeyError:
             aca_angles[side] = 0
-            recorded_error = (
-                f"Not enough {Side.get_name(side)} to calculate ACA."
-            )
+            recorded_error = f"Not enough {Side.get_name(side)} to calculate ACA."
             continue
 
         # get the angle between the two apex points

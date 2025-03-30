@@ -36,18 +36,12 @@ def test_get_midlines(illium_0, config_us):
     assert np.array_equal(old_illium.midline_moved, midline_moved)
 
 
-def test_segs_2_landmarks_us(
-    pre_edited_landmarks_us, pre_edited_results_us, config_us
-):
-    new_landmarks_list, _ = segs_2_landmarks_us(
-        pre_edited_results_us, config_us
-    )
+def test_segs_2_landmarks_us(pre_edited_landmarks_us, pre_edited_results_us, config_us):
+    new_landmarks_list, _ = segs_2_landmarks_us(pre_edited_results_us, config_us)
 
     # remove landmarks that are None
     pre_edited_landmarks_us = [
-        landmark
-        for landmark in pre_edited_landmarks_us
-        if landmark is not None
+        landmark for landmark in pre_edited_landmarks_us if landmark is not None
     ]
     new_landmarks_list = [
         landmarks for landmarks in new_landmarks_list if landmarks is not None

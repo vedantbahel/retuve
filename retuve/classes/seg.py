@@ -160,9 +160,7 @@ class SegObject:
             self.points = [(img_width - x, y) for x, y in self.points]
 
         if self.midline is not None:
-            self.midline = np.array(
-                [(y, img_width - x) for y, x in self.midline]
-            )
+            self.midline = np.array([(y, img_width - x) for y, x in self.midline])
 
         if self.midline_moved is not None:
             self.midline_moved = np.array(
@@ -178,9 +176,7 @@ class SegFrameObjects:
     Class for holding a frame of segmentation objects.
     """
 
-    def __init__(
-        self, img: NDArrayImg_NxNx3, seg_objects: list[SegObject] = None
-    ):
+    def __init__(self, img: NDArrayImg_NxNx3, seg_objects: list[SegObject] = None):
         """
         :param img: Image of the frame.
         :param seg_objects: List of segmentation objects in the frame.

@@ -24,7 +24,7 @@ from retuve.classes.seg import SegObject
 from retuve.hip_us.classes.general import HipDataUS, LandmarksUS
 from retuve.keyphrases.config import Config
 from retuve.keyphrases.enums import MetricUS
-from retuve.utils import find_midline_extremes
+from retuve.utils import find_midline_extremes, warning_decorator
 
 # To move the apex point left or right
 APEX_RIGHT_FACTOR = 0
@@ -51,11 +51,7 @@ def find_alpha_landmarks(
 
     left_most, right_most = find_midline_extremes(illium.midline_moved)
 
-    if (
-        right_most is None
-        or left_most is None
-        or (right_most[1] - left_most[1]) == 0
-    ):
+    if right_most is None or left_most is None or (right_most[1] - left_most[1]) == 0:
         return landmarks
 
     # get the equation for the line between the two extreme points
@@ -75,10 +71,7 @@ def find_alpha_landmarks(
     # for each point along the line, find the distance between that point and the
 
     points_on_line = np.array(
-        [
-            [x, m * x + b]
-            for x in range(int(left_most[1]), int(right_most[1]), 1)
-        ]
+        [[x, m * x + b] for x in range(int(left_most[1]), int(right_most[1]), 1)]
     )
 
     # Convert white_points to a convenient shape for vector operations
@@ -90,19 +83,13 @@ def find_alpha_landmarks(
     b_orth_array = points_on_line[:, 1] - m_orth * points_on_line[:, 0]
 
     # Calculate y_values on the orthogonal line for each point in points_on_line
-    y_values_orth_line = (
-        m_orth * midline_moved[:, 0] + b_orth_array[:, np.newaxis]
-    )
+    y_values_orth_line = m_orth * midline_moved[:, 0] + b_orth_array[:, np.newaxis]
 
     # Check which white points are close to each orthogonal line
-    close_points = np.isclose(
-        y_values_orth_line, midline_moved[:, 1], atol=0.8
-    )
+    close_points = np.isclose(y_values_orth_line, midline_moved[:, 1], atol=0.8)
 
     # Calculate distances for all point pairs
-    distances = np.linalg.norm(
-        points_on_line[:, np.newaxis, :] - midline_moved, axis=2
-    )
+    distances = np.linalg.norm(points_on_line[:, np.newaxis, :] - midline_moved, axis=2)
 
     # Mask distances with close_points to consider only relevant distances
     masked_distances = np.where(close_points, distances, 0)
@@ -128,9 +115,7 @@ def find_alpha_landmarks(
         if right_most is None or left_most is None:
             return landmarks
 
-        left_most, right_most = tuple(reversed(left_most)), tuple(
-            reversed(right_most)
-        )
+        left_most, right_most = tuple(reversed(left_most)), tuple(reversed(right_most))
         mid_x = (left_most[0] + right_most[0]) / 2
         if (
             (best_apex_point[1] < best_point[1])  # apex above line
@@ -147,6 +132,7 @@ def find_alpha_landmarks(
     return landmarks
 
 
+@warning_decorator(alpha=True)
 def find_alpha_angle(points: LandmarksUS) -> float:
     """
     Calculate the Alpha Angle.
@@ -238,10 +224,7 @@ def bad_alpha(hip: HipDataUS) -> bool:
     :return: bool: True if the Alpha Angle is bad.
     """
 
-    if (
-        hip.get_metric(MetricUS.ALPHA) < 20
-        or hip.get_metric(MetricUS.ALPHA) > 100
-    ):
+    if hip.get_metric(MetricUS.ALPHA) < 20 or hip.get_metric(MetricUS.ALPHA) > 100:
         return True
 
     return False

@@ -30,11 +30,11 @@ from retuve.classes.draw import Overlay
 from retuve.hip_us.classes.general import HipDataUS, LandmarksUS
 from retuve.keyphrases.config import Config
 from retuve.keyphrases.enums import Curvature, MetricUS
+from retuve.utils import warning_decorator
 
 
-def find_curvature(
-    landmarks: LandmarksUS, shape: Tuple, config: Config
-) -> float:
+@warning_decorator(alpha=True)
+def find_curvature(landmarks: LandmarksUS, shape: Tuple, config: Config) -> float:
     """
     Calculate the curvature of the hip.
 
@@ -44,9 +44,7 @@ def find_curvature(
 
     :return: float: The curvature of the hip.
     """
-    if not (
-        landmarks and landmarks.left and landmarks.apex and landmarks.right
-    ):
+    if not (landmarks and landmarks.left and landmarks.apex and landmarks.right):
         return 0
 
     if config.hip.curvature_method == Curvature.RADIST:
@@ -96,9 +94,7 @@ def find_curvature(
     return curvature
 
 
-def draw_curvature(
-    hip: HipDataUS, overlay: Overlay, config: Config
-) -> Overlay:
+def draw_curvature(hip: HipDataUS, overlay: Overlay, config: Config) -> Overlay:
     """
     Draw the curvature of the hip.
 

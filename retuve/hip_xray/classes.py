@@ -151,9 +151,7 @@ class HipDataXray:
 
     def json_dump(self, config, dev_metrics: DevMetricsXRay) -> Dict[str, Any]:
         return {
-            "metrics": [
-                {metric.name: metric.value} for metric in self.metrics
-            ],
+            "metrics": [{metric.name: metric.value} for metric in self.metrics],
             "keyphrase": config.name,
             "dev_metrics": dev_metrics.json_dump(),
         }

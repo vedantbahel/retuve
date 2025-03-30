@@ -34,9 +34,7 @@ TOKEN_STORE = {}
 API_TOKEN_STORE = {}
 
 
-async def save_dicom_and_get_results(
-    live_batchdir, instance_id, dicom_content, config
-):
+async def save_dicom_and_get_results(live_batchdir, instance_id, dicom_content, config):
     # Save the DICOM file in the appropriate directory
     dicom_path = f"{live_batchdir}/{instance_id}.dcm"
     if dicom_content is not None:
@@ -112,9 +110,7 @@ async def get_sorted_dicom_images(
     latest_acq_time = latest_time or datetime.min
 
     async with AsyncClient() as client:
-        patients_response = await client.get(
-            f"{orthanc_url}/patients", auth=auth
-        )
+        patients_response = await client.get(f"{orthanc_url}/patients", auth=auth)
         for patient_id in patients_response.json():
             studies_response = await client.get(
                 f"{orthanc_url}/patients/{patient_id}/studies", auth=auth
@@ -140,8 +136,7 @@ async def get_sorted_dicom_images(
 
                         # Remove files that are not multiframe US's
                         if not (
-                            metadata.get("SOPClassUID")
-                            == "1.2.840.10008.5.1.4.1.1.3.1"
+                            metadata.get("SOPClassUID") == "1.2.840.10008.5.1.4.1.1.3.1"
                             and int(metadata.get("NumberOfFrames", 0)) > 1
                         ):
                             continue
@@ -208,8 +203,7 @@ async def get_sorted_dicom_images(
             final_images_with_dates = [latest_image]
 
     return [
-        (image, instance_id)
-        for _, image, instance_id in final_images_with_dates
+        (image, instance_id) for _, image, instance_id in final_images_with_dates
     ], latest_acq_time
 
 

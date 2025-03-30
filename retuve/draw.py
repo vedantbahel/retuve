@@ -32,9 +32,7 @@ from retuve.keyphrases.config import Config
 TARGET_SIZE = (700, 700)
 
 
-def draw_landmarks(
-    hip: Union[HipDataUS, HipDataXray], overlay: Overlay
-) -> Overlay:
+def draw_landmarks(hip: Union[HipDataUS, HipDataXray], overlay: Overlay) -> Overlay:
     """
     Draw the landmarks on the overlay.
 

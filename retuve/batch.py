@@ -93,9 +93,7 @@ def run_single(
             retuve_result.image.save(f"{savedir}/{fileid}{Outputs.IMAGE}")
 
         if retuve_result.metrics and retuve_result.metrics.get("dev_metrics"):
-            ulogger.info(
-                "\n Dev Metrics: ", retuve_result.metrics["dev_metrics"]
-            )
+            ulogger.info("\n Dev Metrics: ", retuve_result.metrics["dev_metrics"])
 
         if retuve_result.video_clip is not None:
             retuve_result.video_clip.write_videofile(
@@ -103,9 +101,7 @@ def run_single(
             )
 
         if retuve_result.visual_3d is not None:
-            retuve_result.visual_3d.write_html(
-                f"{savedir}/{fileid}{Outputs.VISUAL3D}"
-            )
+            retuve_result.visual_3d.write_html(f"{savedir}/{fileid}{Outputs.VISUAL3D}")
 
         # save the metrics to a file
         with open(f"{savedir}/{fileid}{Outputs.METRICS}", "w") as f:
@@ -131,10 +127,7 @@ def run_batch(config: Config):
         files = [
             f"{dataset}/{file}"
             for file in files
-            if any(
-                file.endswith(input_type)
-                for input_type in config.batch.input_types
-            )
+            if any(file.endswith(input_type) for input_type in config.batch.input_types)
         ]
 
         all_files.extend(files)
@@ -153,9 +146,7 @@ def run_batch(config: Config):
 
     if any(error is not None for error in errors):
         already_processed = sum(
-            "already processed" in error
-            for error in errors
-            if error is not None
+            "already processed" in error for error in errors if error is not None
         )
         # count and remove all errors containing "already processed"
         errors = [
