@@ -41,8 +41,7 @@ def test_get_dev_metrics_execution(hip_datas_us, results_us, config_us):
         == hip_datas_us.dev_metrics.no_frames_marked
     )
     assert (
-        hip_datas_before.dev_metrics.graf_frame
-        == hip_datas_us.dev_metrics.graf_frame
+        hip_datas_before.dev_metrics.graf_frame == hip_datas_us.dev_metrics.graf_frame
     )
     assert (
         hip_datas_before.dev_metrics.acetabular_mid_frame
@@ -56,10 +55,7 @@ def test_get_dev_metrics_execution(hip_datas_us, results_us, config_us):
         hip_datas_before.dev_metrics.critial_error
         == hip_datas_us.dev_metrics.critial_error
     )
-    assert (
-        hip_datas_before.dev_metrics.cr_points
-        == hip_datas_us.dev_metrics.cr_points
-    )
+    assert hip_datas_before.dev_metrics.cr_points == hip_datas_us.dev_metrics.cr_points
     assert (
         hip_datas_before.dev_metrics.total_frames
         == hip_datas_us.dev_metrics.total_frames

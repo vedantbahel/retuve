@@ -70,9 +70,7 @@ async def process_dicom_queue():
 
             # check if metrics already exists
             if os.path.exists(f"{result_dir}/metrics.json"):
-                logging.info(
-                    f"Skipping already processed DICOM: {instance_id}"
-                )
+                logging.info(f"Skipping already processed DICOM: {instance_id}")
                 dicom_processing_queue.task_done()
                 continue
 
@@ -119,9 +117,7 @@ async def constantly_delete_temp_dirs(config):
 async def lifespan(app):
     # Create the task once the event loop is running
     task = asyncio.create_task(process_dicom_queue())
-    task2 = asyncio.create_task(
-        constantly_delete_temp_dirs(Config.live_config.name)
-    )
+    task2 = asyncio.create_task(constantly_delete_temp_dirs(Config.live_config.name))
 
     yield
 
@@ -136,9 +132,7 @@ router = APIRouter(lifespan=lifespan)
     "/api/live/",
     response_model=LiveResponse,
     responses={
-        204: {
-            "description": "No Content - Retuve Run likely to be in progress."
-        },
+        204: {"description": "No Content - Retuve Run likely to be in progress."},
         400: {"description": "Invalid file type. Expected a DICOM file."},
         422: {"description": "No DICOM images found on the Orthanc server."},
         500: {"description": "Internal Server Error"},
@@ -184,14 +178,9 @@ async def analyse_image(
             # Get the latest DICOM (the last one in the sorted list)
             latest_dicom, instance_id = dicoms[-1]
         else:
-            raise NoDicomFoundError(
-                "No DICOM images found on the Orthanc server."
-            )
+            raise NoDicomFoundError("No DICOM images found on the Orthanc server.")
 
-        if (
-            request.app.instance_id_cache == instance_id
-            and not config.api.zero_trust
-        ):
+        if request.app.instance_id_cache == instance_id and not config.api.zero_trust:
             hippa_logger.debug(
                 f"Retuve Run for {instance_id} with keyphrase {keyphrase} "
                 f"from host: {request.client.host} has been soft-cached."
@@ -242,9 +231,7 @@ async def analyse_image(
         video_path = video_path.replace(
             live_savedir, f"{RESULTS_URL_ACCESS}/{config.name}"
         )
-        img_path = img_path.replace(
-            live_savedir, f"{RESULTS_URL_ACCESS}/{config.name}"
-        )
+        img_path = img_path.replace(live_savedir, f"{RESULTS_URL_ACCESS}/{config.name}")
 
         # Mark success in hippa logs
         hippa_logger.info(
@@ -269,9 +256,7 @@ async def analyse_image(
 
         # Queue the remaining DICOMs for background processing
         for dicom, dicom_id in dicoms[:-1]:
-            await dicom_processing_queue.put(
-                (dicom_id, dicom, config, live_savedir)
-            )
+            await dicom_processing_queue.put((dicom_id, dicom, config, live_savedir))
 
         return request.app.model_response_cache
 

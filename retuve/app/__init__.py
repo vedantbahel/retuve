@@ -38,9 +38,7 @@ app = FastAPI()
 
 
 @app.exception_handler(UnauthorizedException)
-async def unauthorized_exception_handler(
-    request: Request, exc: UnauthorizedException
-):
+async def unauthorized_exception_handler(request: Request, exc: UnauthorizedException):
     # 303 = “See Other”
     return RedirectResponse(url="/", status_code=303)
 

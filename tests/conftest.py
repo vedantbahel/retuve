@@ -26,10 +26,13 @@ import open3d as o3d
 import pytest
 import yaml
 from PIL import Image, ImageOps
-from xdist.scheduler.loadfile import LoadFileScheduling
 
 from retuve.classes.seg import SegFrameObjects, SegObject
-from retuve.defaults.hip_configs import default_xray, test_default_US
+from retuve.defaults.hip_configs import (
+    default_US,
+    default_xray,
+    test_default_US,
+)
 from retuve.draw import TARGET_SIZE
 from retuve.hip_us.classes.enums import HipLabelsUS
 from retuve.hip_us.classes.general import HipDatasUS, LandmarksUS
@@ -38,6 +41,14 @@ from retuve.keyphrases.config import Config
 
 logging.basicConfig(level=logging.DEBUG)
 log = logging.getLogger(__name__)
+
+
+default_US.register("ultrasound", live=True)
+
+
+@pytest.fixture(scope="session", autouse=True)
+def set_env():
+    os.environ["RETUVE_DISABLE_WARNING"] = "True"
 
 
 # check if test-data exists, otherwise print a message
@@ -135,23 +146,18 @@ def femoral_sphere() -> SegObject:
 @pytest.fixture
 def landmarks_us() -> List[LandmarksUS]:
     return [
-        copy.deepcopy(data_hip_datas[i].landmarks)
-        for i in range(len(data_hip_datas))
+        copy.deepcopy(data_hip_datas[i].landmarks) for i in range(len(data_hip_datas))
     ]
 
 
 @pytest.fixture
 def hip_data_us_0(expected_us_metrics) -> HipDatasUS:
-    return copy.deepcopy(
-        data_hip_datas[expected_us_metrics["frame_with_results"]]
-    )
+    return copy.deepcopy(data_hip_datas[expected_us_metrics["frame_with_results"]])
 
 
 @pytest.fixture
 def results_us_0(expected_us_metrics) -> SegFrameObjects:
-    return copy.deepcopy(
-        data_results[expected_us_metrics["frame_with_results"]]
-    )
+    return copy.deepcopy(data_results[expected_us_metrics["frame_with_results"]])
 
 
 @pytest.fixture

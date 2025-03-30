@@ -26,9 +26,7 @@ def modified_curvature_data(landmarks_us_0, results_us_0):
     return landmarks_us_0, shape
 
 
-def test_find_curvature_radist(
-    modified_curvature_data, config_us, expected_us_metrics
-):
+def test_find_curvature_radist(modified_curvature_data, config_us, expected_us_metrics):
     landmarks, shape = modified_curvature_data
     config = config_us
 

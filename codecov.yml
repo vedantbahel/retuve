@@ -1,0 +1,14 @@
+coverage:
+  status:
+    project:
+      default:
+        # basic
+        target: auto #default
+        threshold: 0%
+        base: auto
+
+comment:
+  require_changes: true
+
+github_checks:
+  annotations: false

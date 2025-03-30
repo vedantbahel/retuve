@@ -54,9 +54,7 @@ def draw_hips_xray(
             hip, seg_frame_objs
         )
 
-        overlay = Overlay(
-            (final_image.shape[0], final_image.shape[1], 3), config
-        )
+        overlay = Overlay((final_image.shape[0], final_image.shape[1], 3), config)
 
         # overlay = draw_seg(final_seg_frame_objs, overlay, config)
 

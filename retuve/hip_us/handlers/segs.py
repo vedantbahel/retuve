@@ -61,11 +61,7 @@ def remove_bad_objs(
     illium = hip_objs.get(HipLabelsUS.IlliumAndAcetabulum, None)
     if illium and illium.box is not None and illium.box[0] > img.shape[1] / 2:
         # check if the femoral head box is left of the illium box
-        if (
-            fem_head
-            and fem_head.box is not None
-            and illium.box[0] > fem_head.box[0]
-        ):
+        if fem_head and fem_head.box is not None and illium.box[0] > fem_head.box[0]:
             fem_head_ilium_wrong_way_round = True
 
     # Femoral Heads should be at least 2.5%

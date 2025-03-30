@@ -52,12 +52,8 @@ def test_get_aca_thirds(
     # Since we do not run the thirds pipeline, just check
     # that the angles are within the expected range
     assert int(aca_angles[Side.ANT]) in expected_us_metrics["aca_thirds_range"]
-    assert (
-        int(aca_angles[Side.POST]) in expected_us_metrics["aca_thirds_range"]
-    )
-    assert (
-        int(aca_angles[Side.GRAF]) in expected_us_metrics["aca_thirds_range"]
-    )
+    assert int(aca_angles[Side.POST]) in expected_us_metrics["aca_thirds_range"]
+    assert int(aca_angles[Side.GRAF]) in expected_us_metrics["aca_thirds_range"]
 
     assert recorded_error == ""
 

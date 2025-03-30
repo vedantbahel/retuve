@@ -121,9 +121,7 @@ async def get_metrics(file_id: str, keyphrase: str, request: Request):
 
 
 @router.post("/api/upload/{keyphrase}")
-async def handle_upload(
-    request: Request, keyphrase: str, file: UploadFile = File(...)
-):
+async def handle_upload(request: Request, keyphrase: str, file: UploadFile = File(...)):
     """
     Handle file uploads.
 
@@ -172,9 +170,7 @@ async def handle_upload(
                 )
 
                 dicom_id = _file.split(".")[0]
-                await dicom_processing_queue.put(
-                    (dicom_id, None, config, live_savedir)
-                )
+                await dicom_processing_queue.put((dicom_id, None, config, live_savedir))
 
         # delete the temp folder
         shutil.rmtree(temp_dir)

@@ -24,16 +24,16 @@ import open3d as o3d
 from retuve.hip_us.classes.general import HipDatasUS
 from retuve.hip_us.typing import CoordinatesArray3D, FemoralHeadSphere
 from retuve.keyphrases.config import Config
+from retuve.utils import warning_decorator
 
 
+@warning_decorator(alpha=True)
 def get_centering_ratio(
     illium_mesh: o3d.geometry.TriangleMesh,
     femoral_head_sphere: FemoralHeadSphere,
     hip_datas: HipDatasUS = None,
     config: Config = None,
-) -> Tuple[
-    float, Tuple[CoordinatesArray3D, CoordinatesArray3D, CoordinatesArray3D]
-]:
+) -> Tuple[float, Tuple[CoordinatesArray3D, CoordinatesArray3D, CoordinatesArray3D]]:
     """
     Get the centering ratio for the femoral head.
 

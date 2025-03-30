@@ -22,23 +22,22 @@ from retuve.hip_us.classes.enums import HipLabelsUS, Side
 from retuve.hip_us.classes.general import HipDatasUS, HipDataUS
 
 # Assuming the functions are imported from the module
-from retuve.hip_us.handlers.side import get_side_metainfo, set_side
+from retuve.hip_us.handlers.side import (
+    get_side_metainfo,
+    reverse_3dus_orientaition,
+)
 
 
-def test_get_side_metainfo(
-    hip_data_us_0: HipDataUS, results_us_0: SegFrameObjects
-):
+def test_get_side_metainfo(hip_data_us_0: HipDataUS, results_us_0: SegFrameObjects):
     closest_illium, mid = get_side_metainfo(hip_data_us_0, results_us_0)
 
     assert closest_illium is not None, "Closest illium should not be None"
     assert mid is not None, "Mid point should not be None"
-    assert isinstance(
-        closest_illium, tuple
-    ), "Closest illium should be a tuple"
+    assert isinstance(closest_illium, tuple), "Closest illium should be a tuple"
     assert isinstance(mid, tuple), "Mid point should be a tuple"
 
 
-def test_set_side_no_landmarks(
+def test_reverse_3dus_orientaition_no_landmarks(
     hip_datas_us: HipDatasUS, results_us: List[SegFrameObjects], config_us
 ):
     hip_datas_us = copy.deepcopy(hip_datas_us)
@@ -48,26 +47,22 @@ def test_set_side_no_landmarks(
         hip_data.landmarks = None
         hip_data.side = None
 
-    updated_hip_datas, updated_results = set_side(
+    updated_hip_datas, updated_results = reverse_3dus_orientaition(
         hip_datas_us, results_us, config_us.hip.allow_flipping
     )
 
     for hip_data in updated_hip_datas:
-        assert (
-            hip_data.side is None
-        ), "Side should be None when landmarks are missing"
+        assert hip_data.side is None, "Side should be None when landmarks are missing"
 
 
-def test_set_side(
+def test_reverse_3dus_orientaition(
     hip_datas_us: HipDatasUS, results_us: List[SegFrameObjects], config_us
 ):
-    updated_hip_datas, updated_results = set_side(
+    updated_hip_datas, updated_results = reverse_3dus_orientaition(
         hip_datas_us, results_us, config_us.hip.allow_flipping
     )
 
-    assert (
-        updated_hip_datas is not None
-    ), "Updated hip datas should not be None"
+    assert updated_hip_datas is not None, "Updated hip datas should not be None"
     assert updated_results is not None, "Updated results should not be None"
 
     assert len(updated_hip_datas) == len(
@@ -77,28 +72,20 @@ def test_set_side(
         results_us
     ), "Length of results should be unchanged"
 
-    front_count = sum(
-        1 for hip_data in updated_hip_datas if hip_data.side == Side.ANT
-    )
-    back_count = sum(
-        1 for hip_data in updated_hip_datas if hip_data.side == Side.POST
-    )
+    front_count = sum(1 for hip_data in updated_hip_datas if hip_data.side == Side.ANT)
+    back_count = sum(1 for hip_data in updated_hip_datas if hip_data.side == Side.POST)
 
-    assert (
-        front_count > 0
-    ), "There should be some frames classified as front (ANT)"
-    assert (
-        back_count > 0
-    ), "There should be some frames classified as back (POST)"
+    assert front_count > 0, "There should be some frames classified as front (ANT)"
+    assert back_count > 0, "There should be some frames classified as back (POST)"
 
 
-def test_set_side_error_handling(
+def test_reverse_3dus_orientaition_error_handling(
     hip_datas_us: HipDatasUS, results_us: List[SegFrameObjects], config_us
 ):
     # Manipulate hip_datas to create a condition where no front side is detected
     hip_datas_us.graf_frame = 0  # Ensuring no front side frames
 
-    updated_hip_datas, updated_results = set_side(
+    updated_hip_datas, updated_results = reverse_3dus_orientaition(
         hip_datas_us, results_us, config_us.hip.allow_flipping
     )
 
@@ -126,12 +113,12 @@ def manipulated_hip_datas(hip_datas_us):
     return hip_datas_us
 
 
-def test_set_side_swap_post_ant(
+def test_reverse_3dus_orientaition_swap_post_ant(
     manipulated_hip_datas: HipDatasUS,
     results_us: List[SegFrameObjects],
     config_us,
 ):
-    updated_hip_datas, updated_results = set_side(
+    updated_hip_datas, updated_results = reverse_3dus_orientaition(
         manipulated_hip_datas, results_us, config_us.hip.allow_flipping
     )
 

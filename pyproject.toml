@@ -30,6 +30,8 @@ pytest-xdist = "^3.6.1"
 fastapi = "^0.115.7"
 httpx = "^0.28.1"
 python-multipart = "^0.0.20"
+uvicorn = "^0.34.0"
+black = "^25.1.0"
 
 [build-system]
 requires = ["poetry-core"]
@@ -51,7 +53,7 @@ testcap = "pytest -vv --cov=retuve --durations=5 --capture-errors ./tests/unit"
 test = "pytest -vv -n 4 --cov=retuve --durations=5 ./tests"
 test_unit = "pytest -vv -n 4 --cov=retuve --durations=5 ./tests/unit"
 test_intergration = "pytest -vv -n 4 --cov=retuve --durations=5 ./tests/intergration"
-test_all = "pytest -vv -n 4 --cov=retuve --dist=loadgroup --durations=5 ./examples/_test.py ./tests"
+test_all = "pytest -vv -n 4 --cov=retuve --cov-branch --cov-report=xml --dist=loadgroup --durations=5 ./examples/_test.py ./tests"
 deadcode = "vulture retuve ./scripts/whitelist.py"
 copiedcode = [{ cmd = "sudo npm install -g jscpd" }, { cmd = "jscpd retuve" }]
 linecount = [
@@ -67,6 +69,11 @@ testgen = [
     { cmd = "poetry install" },
     { cmd = "poetry run python ./tests/_get_test_data.py" },
 ]
+testgetplugins = [
+    { cmd = "poetry install" },
+    { cmd = "poetry run python ./tests/_download_plugins.py" },
+]
+format = "poetry run black ."
 help_real.shell = """
     echo
     echo Retuve Script Help
@@ -92,3 +99,8 @@ help = "poe -q help_real"
 
 [tool.pytest.ini_options]
 filterwarnings = ["ignore::DeprecationWarning"]
+
+[tool.black]
+line-length = 88
+target-version = ['py310']
+include = '\.pyi?$'

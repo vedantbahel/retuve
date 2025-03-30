@@ -54,6 +54,7 @@ for i, (script_path, module_dir) in enumerate(scripts):
                 # Set up the environment
                 env = os.environ.copy()
                 env["PYTHONPATH"] = module_dir
+                env["RETUVE_DISABLE_WARNING"] = "True"
 
                 # Run the script
                 subprocess.run(["python", script_path], check=True, env=env)
@@ -69,8 +70,7 @@ for i, (script_path, module_dir) in enumerate(scripts):
                 files_to_remove = [
                     file_name
                     for file_name in new_files
-                    if os.path.splitext(file_name)[1].lower()
-                    in target_extensions
+                    if os.path.splitext(file_name)[1].lower() in target_extensions
                 ]
 
                 # Delete the filtered files
@@ -80,9 +80,7 @@ for i, (script_path, module_dir) in enumerate(scripts):
                         os.remove(file_path)
 
             except subprocess.CalledProcessError as e:
-                pytest.fail(
-                    f"Script failed: {script_path}\nError message: {e}"
-                )
+                pytest.fail(f"Script failed: {script_path}\nError message: {e}")
 
         return test
 

@@ -146,17 +146,13 @@ def manual_predict_us(
 
             # drop 80% of the points
             points = [
-                (int(x), int(y))
-                for i, (x, y) in enumerate(points)
-                if i % 10 == 0
+                (int(x), int(y)) for i, (x, y) in enumerate(points) if i % 10 == 0
             ]
 
             # convert mask to rgb
             mask = cv2.cvtColor(mask, cv2.COLOR_GRAY2RGB)
 
-            seg_obj = SegObject(
-                points, classes[colour], mask, box=box, conf=1.0
-            )
+            seg_obj = SegObject(points, classes[colour], mask, box=box, conf=1.0)
 
             seg_frame_objects.append(seg_obj)
 

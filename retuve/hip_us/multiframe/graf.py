@@ -30,6 +30,7 @@ from retuve.hip_us.classes.general import HipDatasUS
 from retuve.keyphrases.config import Config
 from retuve.keyphrases.enums import GrafSelectionMethod, MetricUS
 from retuve.logs import ulogger
+from retuve.utils import warning_decorator
 
 DO_CALIBRATION = False
 
@@ -62,9 +63,7 @@ def _get_left_apex_angle(hip) -> bool:
 
 def _get_os_ichium_area(seg_frame_objs) -> float:
     os_ichium = [
-        seg_obj
-        for seg_obj in seg_frame_objs
-        if seg_obj.cls == HipLabelsUS.OsIchium
+        seg_obj for seg_obj in seg_frame_objs if seg_obj.cls == HipLabelsUS.OsIchium
     ]
     os_ishium_area = 0
     # Gives a value of 0 or 2
@@ -76,9 +75,7 @@ def _get_os_ichium_area(seg_frame_objs) -> float:
 
 def _get_femoral_head_area(seg_frame_objs) -> float:
     femoral_head = [
-        seg_obj
-        for seg_obj in seg_frame_objs
-        if seg_obj.cls == HipLabelsUS.FemoralHead
+        seg_obj for seg_obj in seg_frame_objs if seg_obj.cls == HipLabelsUS.FemoralHead
     ]
     femoral_head_area = 0
     if len(femoral_head) != 0:
@@ -90,25 +87,19 @@ def _get_femoral_head_area(seg_frame_objs) -> float:
 def _get_apex_right_distance(hip) -> float:
     apex_right_distance = 0
     if hip.landmarks:
-        apex_right_distance = abs(
-            hip.landmarks.apex[1] - hip.landmarks.right[1]
-        )
+        apex_right_distance = abs(hip.landmarks.apex[1] - hip.landmarks.right[1])
 
     return apex_right_distance
 
 
 def _get_femoral_head_roundness(seg_frame_objs) -> float:
     femoral_head = [
-        seg_obj
-        for seg_obj in seg_frame_objs
-        if seg_obj.cls == HipLabelsUS.FemoralHead
+        seg_obj for seg_obj in seg_frame_objs if seg_obj.cls == HipLabelsUS.FemoralHead
     ]
     roundness_ratio = 0
     if len(femoral_head) != 0:
         foreground_mask = (
-            np.all(femoral_head[0].mask == [255, 255, 255], axis=-1).astype(
-                np.uint8
-            )
+            np.all(femoral_head[0].mask == [255, 255, 255], axis=-1).astype(np.uint8)
             * 255
         )
 
@@ -130,9 +121,7 @@ def _get_femoral_head_roundness(seg_frame_objs) -> float:
 
             # Step 4: Calculate roundness
             # Roundness ratio of contour area to enclosing circle area (closer to 1 is more round)
-            roundness_ratio = (
-                contour_area / circle_area if circle_area != 0 else 0
-            )
+            roundness_ratio = contour_area / circle_area if circle_area != 0 else 0
 
     return roundness_ratio
 
@@ -172,9 +161,7 @@ def graf_frame_algo(
 
     # Gives values between 1 and 7
     alpha_normalisation = max_alpha / 4
-    alpha_value = round(
-        hip_data.get_metric(MetricUS.ALPHA) / alpha_normalisation, 2
-    )
+    alpha_value = round(hip_data.get_metric(MetricUS.ALPHA) / alpha_normalisation, 2)
 
     line_flattness_normalisation = 2
     # Gives values varying between 0 and 10
@@ -186,9 +173,7 @@ def graf_frame_algo(
     image_area = seg_frame_objs.img.shape[0] * seg_frame_objs.img.shape[1]
 
     os_ichium_normalisation = image_area / 140
-    os_ichium_value = (
-        _get_os_ichium_area(seg_frame_objs) / os_ichium_normalisation
-    )
+    os_ichium_value = _get_os_ichium_area(seg_frame_objs) / os_ichium_normalisation
 
     # do the same thing for the femoral head
     femoral_head_normalisation = image_area / 14
@@ -273,6 +258,7 @@ def graf_frame_algo(
     return final_score
 
 
+@warning_decorator(alpha=True)
 def find_graf_plane(
     hip_datas: HipDatasUS, results: List[SegFrameObjects], config: Config
 ) -> HipDatasUS:
@@ -323,8 +309,7 @@ def find_graf_plane_manual_features(
     any_good_graf_data = [
         (hip_data, seg_frame_objs)
         for hip_data, seg_frame_objs in zip(hip_datas, results)
-        if hip_data.metrics
-        and all(metric.value != 0 for metric in hip_data.metrics)
+        if hip_data.metrics and all(metric.value != 0 for metric in hip_data.metrics)
     ]
 
     if len(any_good_graf_data) == 0:
@@ -343,9 +328,7 @@ def find_graf_plane_manual_features(
     ).get_metric(MetricUS.ALPHA)
 
     all_illiums = [
-        hip_data
-        for hip_data in hip_datas
-        if hip_data.get_metric(MetricUS.ALPHA) != 0
+        hip_data for hip_data in hip_datas if hip_data.get_metric(MetricUS.ALPHA) != 0
     ]
 
     if len(all_illiums) > 0:
@@ -400,8 +383,6 @@ def find_graf_plane_manual_features(
 
     hip_datas.graf_frame = graf_frame
 
-    hip_datas.grafs_hip = [
-        hip for hip in hip_datas if hip.frame_no == graf_frame
-    ][0]
+    hip_datas.grafs_hip = [hip for hip in hip_datas if hip.frame_no == graf_frame][0]
 
     return hip_datas

@@ -16,6 +16,7 @@
 Utility functions for the Retuve package.
 """
 
+import functools
 import logging
 import os
 import statistics
@@ -81,3 +82,58 @@ def find_midline_extremes(
     else:
         logging.warning("No white pixels found in the image.")
         return None, None
+
+
+# Global registry to track which functions have shown warnings
+_warned_functions = set()
+
+
+def warning_decorator(alpha=False, beta=False, validated=False, paper_url=None):
+    """
+    Decorator to print warning messages when decorated functions are run, based on specified flags.
+    Each warning is only printed once per function per program run.
+
+    Args:
+        alpha (bool): If True, prints an alpha warning message. Defaults to False.
+        beta (bool): If True, prints a beta warning message. Defaults to False.
+        validated (bool): If True, prints a validated warning message. Defaults to False.
+        paper_url (str, optional): URL of the paper related to the beta validation. Defaults to None.
+    """
+
+    def decorator(func):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            func_id = id(func)  # Use function's id as unique identifier
+
+            # Only show warning if this function hasn't been warned about yet
+            if func_id not in _warned_functions:
+                if alpha:
+                    print(
+                        f"\nWARNING: {func.__name__} is in early experimentation "
+                        "and should not be used for anything outside of "
+                        "research by an expert in the field of Hip Dysplasia "
+                        "AI. Use it with extreme caution."
+                    )
+                elif beta:
+                    message = (
+                        f"\nWARNING: {func.__name__} has limited validation, with at "
+                        "least one paper released on a small scale, with "
+                        "accepted Inter-class Correlation coefficients (ICC). "
+                        "Use with caution, ensuring to read the full paper."
+                    )
+                    if paper_url:
+                        message += f"  Paper URL: {paper_url}"
+                    print(message)
+                elif validated:
+                    print(
+                        f"\nWARNING: Using validated function {func.__name__} - use with caution."
+                    )
+
+                # Add this function to the set of warned functions
+                _warned_functions.add(func_id)
+
+            return func(*args, **kwargs)
+
+        return wrapper
+
+    return decorator

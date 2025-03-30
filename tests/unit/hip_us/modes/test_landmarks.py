@@ -40,9 +40,7 @@ def test_landmarks_2_metrics_us(
         assert new_hip.get_metric(MetricUS.COVERAGE) == old_hip.get_metric(
             MetricUS.COVERAGE
         )
-        assert new_hip.get_metric(MetricUS.ALPHA) == old_hip.get_metric(
-            MetricUS.ALPHA
-        )
+        assert new_hip.get_metric(MetricUS.ALPHA) == old_hip.get_metric(MetricUS.ALPHA)
         assert new_hip.get_metric(MetricUS.CURVATURE) == old_hip.get_metric(
             MetricUS.CURVATURE
         )

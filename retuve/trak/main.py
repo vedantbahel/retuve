@@ -59,14 +59,11 @@ def get_state(config: Config) -> bool:
         # Check if any case files exist
         output_paths = [os.path.join(save_dir, file_id)]
         any_case_files_exist = any(
-            os.path.isfile(os.path.join(path, "metrics.json"))
-            for path in output_paths
+            os.path.isfile(os.path.join(path, "metrics.json")) for path in output_paths
         )
 
         url = config.api.url
-        base_url = os.path.join(
-            url, API_RESULTS_URL_ACCESS, config.name, file_id
-        )
+        base_url = os.path.join(url, API_RESULTS_URL_ACCESS, config.name, file_id)
         updated.img_url = os.path.join(base_url, Outputs.IMAGE)
 
         # If files exist, update URLs and set state to COMPLETED
@@ -81,13 +78,10 @@ def get_state(config: Config) -> bool:
 
             # Insert Empty Images automatically, if mode is not 3D
             if config.batch.hip_mode not in [HipMode.US3D, HipMode.US2DSW]:
-                shutil.copyfile(
-                    file, os.path.join(save_dir, file_id, "img.jpg")
-                )
+                shutil.copyfile(file, os.path.join(save_dir, file_id, "img.jpg"))
 
             any_case_videos_exist = any(
-                os.path.isfile(os.path.join(path, "video.mp4"))
-                for path in output_paths
+                os.path.isfile(os.path.join(path, "video.mp4")) for path in output_paths
             )
 
             if any_case_videos_exist:
@@ -108,9 +102,7 @@ def get_state(config: Config) -> bool:
                 os.path.join(save_dir, cached_file.file_id, output)
                 for output in config.batch.outputs
             ]
-            any_case_files_exist = any(
-                os.path.exists(path) for path in output_paths
-            )
+            any_case_files_exist = any(os.path.exists(path) for path in output_paths)
 
             if any_case_files_exist:
                 # mark as dead

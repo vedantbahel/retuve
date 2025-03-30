@@ -26,9 +26,7 @@ def test_draw_fem_head(hip_data_us_0, fem_sph, config_us):
     assert isinstance(result_overlay, Overlay)
 
 
-def test_draw_hips_us(
-    hip_datas_us, results_us, config_us, fem_sph, img_shape_us
-):
+def test_draw_hips_us(hip_datas_us, results_us, config_us, fem_sph, img_shape_us):
     images, nifti = draw_hips_us(hip_datas_us, results_us, fem_sph, config_us)
 
     assert isinstance(images, list)

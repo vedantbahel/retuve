@@ -32,9 +32,7 @@ def modified_landmarks(landmarks_us_0):
     return landmarks_us_0
 
 
-def test_find_cov_landmarks_with_valid_data(
-    femoral_0, modified_landmarks, config_us
-):
+def test_find_cov_landmarks_with_valid_data(femoral_0, modified_landmarks, config_us):
     landmarks = find_cov_landmarks(femoral_0, modified_landmarks, config_us)
     assert landmarks.point_d is not None
     assert landmarks.point_D is not None

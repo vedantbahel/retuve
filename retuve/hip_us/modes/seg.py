@@ -149,9 +149,7 @@ def segs_2_landmarks_us(
                 and ilium.box is not None
                 and ilium.box[0] > results[0].img.shape[1] / 2
             ):
-                hip_objs[HipLabelsUS.IlliumAndAcetabulum] = SegObject(
-                    empty=True
-                )
+                hip_objs[HipLabelsUS.IlliumAndAcetabulum] = SegObject(empty=True)
 
     for seg_frame_objs, hip_objs in zip(results, hip_objs_list):
         start = time.time()
@@ -195,10 +193,7 @@ def pre_process_segs_us(
     for frame_seg_objs in results:
         start = time.time()
         for seg_object in frame_seg_objs:
-            if (
-                seg_object.empty
-                or seg_object.cls != HipLabelsUS.IlliumAndAcetabulum
-            ):
+            if seg_object.empty or seg_object.cls != HipLabelsUS.IlliumAndAcetabulum:
                 continue
 
             seg_object.midline, seg_object.midline_moved = get_midlines(

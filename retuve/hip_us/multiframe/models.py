@@ -53,9 +53,7 @@ def ms(
 
     :return: The coordinates for plotting a sphere.
     """
-    u, v = np.mgrid[
-        0 : 2 * np.pi : resolution * 2j, 0 : np.pi : resolution * 1j
-    ]
+    u, v = np.mgrid[0 : 2 * np.pi : resolution * 2j, 0 : np.pi : resolution * 1j]
     X = radius * np.cos(u) * np.sin(v) + x
     Y = radius * np.sin(u) * np.sin(v) + y
     Z = radius * np.cos(v) + z
@@ -149,9 +147,7 @@ def build_3d_visual(
     }
 
     for i, color in enumerate(ACA_COLORS.values()):
-        triangles = [
-            triangle for triangle in normals_data if triangle.color == color
-        ]
+        triangles = [triangle for triangle in normals_data if triangle.color == color]
         fig.add_trace(
             go.Cone(
                 x=[triangle.centroid[0] - com[0] for triangle in triangles],
@@ -267,9 +263,7 @@ def get_femoral_sphere(
     z_gap = config.hip.z_gap * (200 / len(hip_datas))
 
     hips_of_interest = [
-        hip
-        for hip in hip_datas
-        if hip.landmarks and hip.landmarks.point_d is not None
+        hip for hip in hip_datas if hip.landmarks and hip.landmarks.point_d is not None
     ]
 
     if len(hips_of_interest) != 0:
@@ -297,17 +291,9 @@ def get_femoral_sphere(
 
         fem_center = (
             middle_hip.landmarks.point_D[0]
-            + (
-                middle_hip.landmarks.point_d[0]
-                - middle_hip.landmarks.point_D[0]
-            )
-            / 2,
+            + (middle_hip.landmarks.point_d[0] - middle_hip.landmarks.point_D[0]) / 2,
             middle_hip.landmarks.point_D[1]
-            + (
-                middle_hip.landmarks.point_d[1]
-                - middle_hip.landmarks.point_D[1]
-            )
-            / 2,
+            + (middle_hip.landmarks.point_d[1] - middle_hip.landmarks.point_D[1]) / 2,
             middle_hip.frame_no * z_gap,
         )
 
@@ -377,9 +363,7 @@ def get_illium_mesh(
                 illium_pc.append(points)
                 apex = hip_data.landmarks.apex
 
-                apex_points.append(
-                    [apex[0], apex[1], hip_data.frame_no * z_gap]
-                )
+                apex_points.append([apex[0], apex[1], hip_data.frame_no * z_gap])
 
         even_count += 1
 
@@ -425,9 +409,7 @@ def get_illium_mesh(
     return illium_mesh, apex_points
 
 
-def circle_radius_at_z(
-    sphere_radius: float, z_center: float, z_input: float
-) -> float:
+def circle_radius_at_z(sphere_radius: float, z_center: float, z_input: float) -> float:
     """
     Calculate the radius of a circle on a sphere at a given Z-coordinate.
 

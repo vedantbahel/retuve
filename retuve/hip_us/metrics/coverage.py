@@ -25,6 +25,7 @@ from retuve.classes.seg import SegObject
 from retuve.hip_us.classes.general import HipDataUS, LandmarksUS
 from retuve.keyphrases.config import Config
 from retuve.keyphrases.enums import MetricUS
+from retuve.utils import warning_decorator
 
 FEM_HEAD_SCALE_FACTOR = 0.18
 
@@ -75,10 +76,7 @@ def find_cov_landmarks(
     radius = diameter / 2
 
     center = (
-        int(
-            (abs(most_left_point[0] - most_right_point[0]) / 2)
-            + most_left_point[0]
-        ),
+        int((abs(most_left_point[0] - most_right_point[0]) / 2) + most_left_point[0]),
         int(top_most_point[1] + radius),
     )
 
@@ -135,6 +133,7 @@ def find_cov_landmarks(
     return landmarks
 
 
+@warning_decorator(alpha=True)
 def find_coverage(landmarks: LandmarksUS) -> float:
     """
     Calculate the Coverage metric.
@@ -204,10 +203,7 @@ def bad_coverage(hip: HipDataUS) -> bool:
     :return: bool: True if the Coverage is bad.
     """
 
-    if (
-        hip.get_metric(MetricUS.COVERAGE) < 0
-        or hip.get_metric(MetricUS.COVERAGE) > 1
-    ):
+    if hip.get_metric(MetricUS.COVERAGE) < 0 or hip.get_metric(MetricUS.COVERAGE) > 1:
         return True
 
     return False

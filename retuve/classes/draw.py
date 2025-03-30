@@ -145,9 +145,7 @@ class Overlay:
             if not seg_obj.empty:
                 draw.polygon(
                     seg_obj.points,
-                    fill=LabelColours.get_color_from_index(
-                        seg_obj.cls.value + 1
-                    ),
+                    fill=LabelColours.get_color_from_index(seg_obj.cls.value + 1),
                 )
 
         return seg_overlay
@@ -186,9 +184,7 @@ class Overlay:
         self.add_operation(
             DrawTypes.SEGS,
             points,
-            fill=self.config.visuals.seg_color.rgba(
-                self.config.visuals.seg_alpha
-            ),
+            fill=self.config.visuals.seg_color.rgba(self.config.visuals.seg_alpha),
         )
 
     def draw_box(self, box: Tuple[int, int, int, int], grafs: bool = False):
@@ -232,9 +228,7 @@ class Overlay:
                 fill=self.config.hip.midline_color.rgba(),
             )
 
-    def draw_lines(
-        self, line_points: List[Tuple[Tuple[int, int], Tuple[int, int]]]
-    ):
+    def draw_lines(self, line_points: List[Tuple[Tuple[int, int], Tuple[int, int]]]):
         """
         Draws lines on the overlay.
 

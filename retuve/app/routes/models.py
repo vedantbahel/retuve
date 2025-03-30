@@ -140,9 +140,7 @@ def analyse_image(
 
         if result.image:
             for i, metric in enumerate(result.hip.metrics):
-                metrics2d.append(
-                    Metric2D(name=metric.name, value=metric.value)
-                )
+                metrics2d.append(Metric2D(name=metric.name, value=metric.value))
 
         # Mark success in hippa logs
         hippa_logger.info(

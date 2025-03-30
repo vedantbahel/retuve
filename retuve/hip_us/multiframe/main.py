@@ -138,8 +138,7 @@ def get_3d_metrics_and_visuals(
             post_values = [
                 hip_data.get_metric(name)
                 for hip_data in hip_datas
-                if hip_data.side == Side.POST
-                and hip_data.get_metric(name) != 0
+                if hip_data.side == Side.POST and hip_data.get_metric(name) != 0
             ] or [0]
             ant_values = [
                 hip_data.get_metric(name)
@@ -172,9 +171,7 @@ def get_3d_metrics_and_visuals(
     else:
         fem_sph = None
 
-    ulogger.info(
-        f"Time for all 3D Elements: {round(time.time() - start, 2)} s"
-    )
+    ulogger.info(f"Time for all 3D Elements: {round(time.time() - start, 2)} s")
 
     return (
         hip_datas,

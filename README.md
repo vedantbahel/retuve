@@ -1,16 +1,30 @@
 ![Retuve](https://files.mcaq.me/52kj1.png)
 
+![tests](https://github.com/radoss-org/retuve/actions/workflows/test.yml/badge.svg)
+[![codecov](https://codecov.io/gh/radoss-org/retuve/graph/badge.svg?token=IMVHNUTUDY)](https://codecov.io/gh/radoss-org/retuve)
+
 # Retuve - The first Open, Collaborative Framework for Infant Hip Health using AI
+
+__This software is an experimental tool for **Research Use Only**. It is intended solely for research purposes related to the diagnosis of Developmental Dysplasia of the Hip (DDH).__
+__This software has **NOT** been approved as a medical device by any regulatory agency in any country. It is not intended for clinical use, diagnosis, or treatment.__
+__The software is provided "as is" without any warranty, express or implied. Use of this software is at your own risk. The developers and contributors are not responsible for any consequences resulting from the use or misuse of this software.__
+__Please consult with qualified healthcare professionals for any medical advice or diagnosis.__
+
+-----------------------------
 
 Retuve (from the scottish gaelic `Ri taobh` meaning `beside`) is a framework for analysing infant hips. It is designed to be a flexible and extensible framework that can be used by developers, AI researchers and clinicians.
 
-It takes in raw Hip Ultrasound and X-Ray images, and outputs a report with the labelled images, and the results, exactly as a clinician would.
+It takes in raw hip Ultrasound and X-Ray images, and outputs a report with the labelled images, and the results, exactly as a clinician would.
 
 <img src="https://raw.githubusercontent.com/radoss-org/radoss-creative-commons/main/other/224_ddh_115_%26_172535_0_diagram.jpg" alt="drawing" width="500"/>
 
 Attribution of the above Ultrasound Images: Case courtesy of Ryan Thibodeau from https://radiopaedia.org 172535 (https://radiopaedia.org/cases/172535)
 
 Attribution of the above X-Ray Images: Fraiwan, Mohammad; Al-Kofahi, Noran; Hanatleh, Omar; ibnian, ali (2022), “A dataset of DDH x-ray images”, Mendeley Data, V2, doi: 10.17632/jf3pv98m9g.2
+
+# Docs
+
+See our docs online at [https://retuve.nidusai.ca](https://retuve.nidusai.ca)
 
 # License
 
@@ -27,6 +41,9 @@ pip install git+https://github.com/radoss-org/retuve.git
 ```
 
 You can then run the following code to get a basic report:
+
+**WARNING: Before running this script, please make sure you have read the data disclaimer at `DATA_DISCLAIMER.md`.**
+
 
 ```python
 import pydicom
@@ -112,16 +129,19 @@ poe test_all
 poe help
 ```
 
-# Immediate Roadmap
-
-- [ ] Add Default Apache 2.0 Licensed AI Plugins
-- [ ] Add Documentaition for Retuve Trak
-- [ ] Create Apache 2.0 Licensed Dataset and Benchmark
-
 # Invitation for Collaboration
 
 We are looking for support on the following:
 
-- [ ] Landmark Models
+- [ ] Landmark Models from litrature
+- [ ] Native 3D Ultrasound Methods
 
 We also accept any new algorithms for the different metrics, with the option to switch back to the old method provided through the config.
+
+Please also see our [Milestones](https://github.com/radoss-org/retuve/milestones) for more information on what we are working on.
+
+# Acknowledgements
+
+Data for the examples and tests is from [https://github.com/radoss-org/radoss-creative-commons](https://github.com/radoss-org/radoss-creative-commons).
+
+Please see this repo for attribution and licensing information.

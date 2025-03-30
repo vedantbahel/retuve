@@ -34,12 +34,14 @@ from retuve.hip_us.classes.dev import DevMetricsUS
 from retuve.hip_us.classes.general import HipDatasUS, HipDataUS
 from retuve.hip_us.draw import draw_hips_us, draw_table
 from retuve.hip_us.handlers.bad_data import handle_bad_frames
-from retuve.hip_us.handlers.side import set_side
+from retuve.hip_us.handlers.side import reverse_3dus_orientaition
 from retuve.hip_us.metrics.dev import get_dev_metrics
 from retuve.hip_us.modes.landmarks import landmarks_2_metrics_us
 from retuve.hip_us.modes.seg import pre_process_segs_us, segs_2_landmarks_us
-from retuve.hip_us.multiframe import (find_graf_plane,
-                                      get_3d_metrics_and_visuals)
+from retuve.hip_us.multiframe import (
+    find_graf_plane,
+    get_3d_metrics_and_visuals,
+)
 from retuve.hip_xray.classes import DevMetricsXRay, HipDataXray, LandmarksXRay
 from retuve.hip_xray.draw import draw_hips_xray
 from retuve.hip_xray.landmarks import landmarks_2_metrics_xray
@@ -110,9 +112,7 @@ def process_segs_us(
     :return: The hip datas, the results, and the shape.
     """
 
-    results: List[SegFrameObjects] = modes_func(
-        file, config, **modes_func_kwargs_dict
-    )
+    results: List[SegFrameObjects] = modes_func(file, config, **modes_func_kwargs_dict)
     results, shape = pre_process_segs_us(results, config)
     pre_edited_results = copy.deepcopy(results)
     landmarks, all_seg_rejection_reasons = segs_2_landmarks_us(results, config)
@@ -281,7 +281,7 @@ def analyse_hip_3DUS(
     hip_datas.file_id = file_id
     hip_datas = find_graf_plane(hip_datas, results, config=config)
 
-    hip_datas, results = set_side(
+    hip_datas, results = reverse_3dus_orientaition(
         hip_datas, results, config.hip.allow_flipping
     )
 
@@ -505,13 +505,10 @@ def retuve_run(
     :return: The Retuve result standardised output.
     """
     always_dcm = (
-        len(config.batch.input_types) == 1
-        and ".dcm" in config.batch.input_types
+        len(config.batch.input_types) == 1 and ".dcm" in config.batch.input_types
     )
 
-    if always_dcm or (
-        file.endswith(".dcm") and ".dcm" in config.batch.input_types
-    ):
+    if always_dcm or (file.endswith(".dcm") and ".dcm" in config.batch.input_types):
         file = pydicom.dcmread(file)
 
     if hip_mode == HipMode.XRAY:
@@ -519,9 +516,7 @@ def retuve_run(
         hip, image, dev_metrics = analyse_hip_xray_2D(
             file, config, modes_func, modes_func_kwargs_dict
         )
-        return RetuveResult(
-            hip.json_dump(config, dev_metrics), image=image, hip=hip
-        )
+        return RetuveResult(hip.json_dump(config, dev_metrics), image=image, hip=hip)
     elif hip_mode == HipMode.US3D:
         hip_datas, video_clip, visual_3d, dev_metrics = analyse_hip_3DUS(
             file, config, modes_func, modes_func_kwargs_dict
@@ -537,9 +532,7 @@ def retuve_run(
         hip, image, dev_metrics = analyse_hip_2DUS(
             file, config, modes_func, modes_func_kwargs_dict
         )
-        return RetuveResult(
-            hip.json_dump(config, dev_metrics), hip=hip, image=image
-        )
+        return RetuveResult(hip.json_dump(config, dev_metrics), hip=hip, image=image)
     elif hip_mode == HipMode.US2DSW:
         hip, image, dev_metrics, video_clip = analyse_hip_2DUS_sweep(
             file, config, modes_func, modes_func_kwargs_dict

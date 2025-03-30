@@ -35,14 +35,11 @@ def test_get_femoral_sphere(hip_datas_us, config_us, femoral_sphere):
 
 
 def test_get_illium_mesh(hip_datas_us, illium_mesh, results_us, config_us):
-    illium_mesh_new, apex_points = get_illium_mesh(
-        hip_datas_us, results_us, config_us
-    )
+    illium_mesh_new, apex_points = get_illium_mesh(hip_datas_us, results_us, config_us)
     assert illium_mesh_new is not None
     assert len(apex_points) > 0
     assert (
-        np.array(illium_mesh_new.vertices).shape
-        == np.array(illium_mesh.vertices).shape
+        np.array(illium_mesh_new.vertices).shape == np.array(illium_mesh.vertices).shape
     )
 
 

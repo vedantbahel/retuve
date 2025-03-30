@@ -80,9 +80,7 @@ def main(
 
     ulogger.info(f"Running on device: {config.device}")
 
-    keyphrase_file = process_file_path(
-        keyphrase_file, LOCAL_DIR, "keyphrase_file"
-    )
+    keyphrase_file = process_file_path(keyphrase_file, LOCAL_DIR, "keyphrase_file")
 
     ulogger.info(f"Using mode_func: {config.batch.mode_func.__name__}")
     ulogger.info(f"Using keyphrase_file: {keyphrase_file}")

@@ -25,9 +25,7 @@ US_NII_FILE_PATH = "./tests/test-data/171551.nii.gz"
 def test_manual_predict_us_dcm(
     us_dcm, config_us, results_us, us_nii_file_path, expected_us_metrics
 ):
-    new_results = manual_predict_us_dcm(
-        us_dcm, config_us, seg=us_nii_file_path
-    )
+    new_results = manual_predict_us_dcm(us_dcm, config_us, seg=us_nii_file_path)
     if expected_us_metrics["flipped"]:
         new_results = new_results[::-1]
     illium = [

@@ -76,9 +76,7 @@ def test_SegObject_init_invalid_class():
 
 
 def test_SegObject_init_invalid_conf():
-    with pytest.raises(
-        ValueError, match="conf is not None and not between 0 and 1"
-    ):
+    with pytest.raises(ValueError, match="conf is not None and not between 0 and 1"):
         SegObject(clss=1, conf=1.5, mask=create_dummy_image())
 
 
