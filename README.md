@@ -1,5 +1,7 @@
 ![Retuve](https://files.mcaq.me/52kj1.png)
 
+![tests](https://github.com/radoss-org/retuve/actions/workflows/test.yml/badge.svg)
+
 # Retuve - The first Open, Collaborative Framework for Infant Hip Health using AI
 
 __This software is an experimental tool for **Research Use Only**. It is intended solely for research purposes related to the diagnosis of Developmental Dysplasia of the Hip (DDH).__

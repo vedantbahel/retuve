@@ -48,7 +48,8 @@ def test_analyse_hip_3DUS(us_file_path, metrics_3d_us):
 
     metrics = hip_datas.json_dump(test_default_US)
     del metrics["recorded_error"]
-    del metrics_3d_us["recorded_error"]
+    if "recorded_error" in metrics_3d_us:
+        del metrics_3d_us["recorded_error"]
 
     assert metrics == metrics_3d_us
 
@@ -64,7 +65,8 @@ def test_retuve_run_3DUS(us_file_path, metrics_3d_us):
         file=us_file_path,
     )
     del retuve_result.metrics["recorded_error"]
-    del metrics_3d_us["recorded_error"]
+    if "recorded_error" in metrics_3d_us:
+        del metrics_3d_us["recorded_error"]
 
     assert retuve_result.metrics == metrics_3d_us
 
