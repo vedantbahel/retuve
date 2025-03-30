@@ -13,7 +13,7 @@ __Please consult with qualified healthcare professionals for any medical advice 
 
 Retuve (from the scottish gaelic `Ri taobh` meaning `beside`) is a framework for analysing infant hips. It is designed to be a flexible and extensible framework that can be used by developers, AI researchers and clinicians.
 
-It takes in raw Hip Ultrasound and X-Ray images, and outputs a report with the labelled images, and the results, exactly as a clinician would.
+It takes in raw hip Ultrasound and X-Ray images, and outputs a report with the labelled images, and the results, exactly as a clinician would.
 
 <img src="https://raw.githubusercontent.com/radoss-org/radoss-creative-commons/main/other/224_ddh_115_%26_172535_0_diagram.jpg" alt="drawing" width="500"/>
 
