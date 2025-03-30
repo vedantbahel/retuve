@@ -1,6 +1,7 @@
 ![Retuve](https://files.mcaq.me/52kj1.png)
 
 ![tests](https://github.com/radoss-org/retuve/actions/workflows/test.yml/badge.svg)
+[![codecov](https://codecov.io/gh/radoss-org/retuve/graph/badge.svg?token=IMVHNUTUDY)](https://codecov.io/gh/radoss-org/retuve)
 
 # Retuve - The first Open, Collaborative Framework for Infant Hip Health using AI
 
