@@ -137,6 +137,8 @@ We are looking for support on the following:
 
 We also accept any new algorithms for the different metrics, with the option to switch back to the old method provided through the config.
 
+Please also see our [Milestones](https://github.com/radoss-org/retuve/milestones) for more information on what we are working on.
+
 # Acknowledgements
 
 Data for the examples and tests is from [https://github.com/radoss-org/radoss-creative-commons](https://github.com/radoss-org/radoss-creative-commons).

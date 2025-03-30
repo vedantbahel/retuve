@@ -60,6 +60,7 @@ jobs:
 
     - name: Run tests
       run: |
+        sudo rm -rf tmp/*
         poetry run poe test_all
 
     - name: Upload coverage to Codecov
