@@ -55,7 +55,7 @@ print("Thank you for agreeing to the terms. Proceeding with the test generation.
 
 # Create the output directory if it doesn't exist
 if not os.path.exists(output_dir):
-    os.makedirs(output_dir)
+    os.makedirs(output_dir, exist_ok=True)
 
 
 # Function to download a file

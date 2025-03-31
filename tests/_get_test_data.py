@@ -81,7 +81,7 @@ print("Thank you for agreeing to the terms. Proceeding with the test generation.
 if os.path.exists("./tests/test-data"):
     shutil.rmtree("./tests/test-data")
 
-os.makedirs("./tests/test-data")
+os.makedirs("./tests/test-data", exist_ok=True)
 
 # Example usage
 dcm_file, seg_file = download_case(

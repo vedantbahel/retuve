@@ -52,7 +52,7 @@ def register_config_dirs(config, other_dirs=[]):
     for dir in dirs:
         if dir and not os.path.exists(dir):
             ulogger.info(f"Creating directory: {dir}")
-            os.makedirs(dir)
+            os.makedirs(dir, exist_ok=True)
 
 
 def rmean(values: List[float]) -> float:
@@ -108,7 +108,7 @@ def warning_decorator(alpha=False, beta=False, validated=False, paper_url=None):
             # Only show warning if this function hasn't been warned about yet
             if func_id not in _warned_functions:
                 if alpha:
-                    print(
+                    message = (
                         f"\nWARNING: {func.__name__} is in early experimentation "
                         "and should not be used for anything outside of "
                         "research by an expert in the field of Hip Dysplasia "
@@ -121,13 +121,15 @@ def warning_decorator(alpha=False, beta=False, validated=False, paper_url=None):
                         "accepted Inter-class Correlation coefficients (ICC). "
                         "Use with caution, ensuring to read the full paper."
                     )
-                    if paper_url:
-                        message += f"  Paper URL: {paper_url}"
                     print(message)
                 elif validated:
-                    print(
-                        f"\nWARNING: Using validated function {func.__name__} - use with caution."
-                    )
+                    message = f"\nWARNING: Using academic-only validated function {func.__name__} - use with caution, and never in a clinical setting."
+
+                if paper_url and message:
+                    message += f"  Paper URL: {paper_url}"
+
+                if message:
+                    print(message)
 
                 # Add this function to the set of warned functions
                 _warned_functions.add(func_id)
