@@ -69,7 +69,7 @@ def run_single(
         if os.path.exists(f"{savedir}/{fileid}"):
             shutil.rmtree(f"{savedir}/{fileid}")
 
-        os.makedirs(f"{savedir}/{fileid}")
+        os.makedirs(f"{savedir}/{fileid}", exist_ok=True)
     else:
         fileid += "_"
 
@@ -136,7 +136,7 @@ def run_batch(config: Config):
 
     # create savedir if it doesn't exist
     if not os.path.exists(config.api.savedir):
-        os.makedirs(config.api.savedir)
+        os.makedirs(config.api.savedir, exist_ok=True)
 
     torch.multiprocessing.set_start_method("spawn", force=True)
 
