@@ -90,6 +90,8 @@ hip = HipConfig(
     graf_selection_func_args={},
     display_graf_conf=False,
     graf_algo_threshold=None,
+    graf_frame_selection=None,
+    allow_irregular_illiums=False,
 )
 
 trak = TrakConfig(
@@ -119,7 +121,7 @@ batch = BatchConfig(
     mode_func_args={},
     processes=1,
     input_types=[".dcm", ".jpg"],
-    datasets=[],
+    datasets=[api.upload_dir],
 )
 
 base_config = Config(

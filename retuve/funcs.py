@@ -38,10 +38,7 @@ from retuve.hip_us.handlers.side import reverse_3dus_orientaition
 from retuve.hip_us.metrics.dev import get_dev_metrics
 from retuve.hip_us.modes.landmarks import landmarks_2_metrics_us
 from retuve.hip_us.modes.seg import pre_process_segs_us, segs_2_landmarks_us
-from retuve.hip_us.multiframe import (
-    find_graf_plane,
-    get_3d_metrics_and_visuals,
-)
+from retuve.hip_us.multiframe import find_graf_plane, get_3d_metrics_and_visuals
 from retuve.hip_xray.classes import DevMetricsXRay, HipDataXray, LandmarksXRay
 from retuve.hip_xray.draw import draw_hips_xray
 from retuve.hip_xray.landmarks import landmarks_2_metrics_xray
@@ -129,7 +126,7 @@ def process_segs_us(
 
 
 def analyse_hip_xray_2D(
-    img: Image.Image,
+    img: Union[Image.Image, pydicom.FileDataset],
     keyphrase: Union[str, Config],
     modes_func: Callable[
         [Image.Image, str, Dict[str, Any]],
@@ -152,9 +149,16 @@ def analyse_hip_xray_2D(
     else:
         config = keyphrase
 
+    if isinstance(img, pydicom.FileDataset):
+        data = img
+    elif isinstance(img, Image.Image):
+        data = [img]
+    else:
+        raise ValueError(f"Invalid image type: {type(img)}. Expected Image or DICOM.")
+
     if config.operation_type in OperationType.LANDMARK:
         landmark_results, seg_results = modes_func(
-            [img], keyphrase, **modes_func_kwargs_dict
+            data, keyphrase, **modes_func_kwargs_dict
         )
         hip_datas, image_arrays = process_landmarks_xray(
             config, landmark_results, seg_results
@@ -512,7 +516,8 @@ def retuve_run(
         file = pydicom.dcmread(file)
 
     if hip_mode == HipMode.XRAY:
-        file = Image.open(file)
+        if not isinstance(file, pydicom.FileDataset):
+            file = Image.open(file)
         hip, image, dev_metrics = analyse_hip_xray_2D(
             file, config, modes_func, modes_func_kwargs_dict
         )

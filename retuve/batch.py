@@ -138,7 +138,8 @@ def run_batch(config: Config):
     if not os.path.exists(config.api.savedir):
         os.makedirs(config.api.savedir, exist_ok=True)
 
-    torch.multiprocessing.set_start_method("spawn", force=True)
+    if not multiprocessing.get_start_method(allow_none=True):
+        multiprocessing.set_start_method("spawn", force=True)
 
     with multiprocessing.Pool(processes=config.batch.processes) as pool:
         chunks = [(config, file, True) for file in all_files]

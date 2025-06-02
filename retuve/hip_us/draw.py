@@ -30,7 +30,12 @@ from radstract.data.nifti import NIFTI, convert_images_to_nifti_labels
 
 from retuve.classes.draw import Overlay
 from retuve.classes.seg import SegFrameObjects
-from retuve.draw import TARGET_SIZE, draw_landmarks, draw_seg, resize_data_for_display
+from retuve.draw import (
+    TARGET_SIZE,
+    draw_landmarks,
+    draw_seg,
+    resize_data_for_display,
+)
 from retuve.hip_us.classes.enums import Side
 from retuve.hip_us.classes.general import HipDatasUS, HipDataUS
 from retuve.hip_us.handlers.side import get_side_metainfo

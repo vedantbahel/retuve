@@ -20,6 +20,8 @@ Import them directly from the retuve package.
 We don't store them, so that the Retuve UI does not use them.
 """
 
+from radstract.data.dicom import DicomTypes
+
 from retuve.keyphrases.enums import MetricUS, OperationType
 
 from .config import base_config
@@ -40,6 +42,8 @@ default_xray.visuals.points_radius = 10
 default_xray.visuals.line_thickness = 3
 default_xray.visuals.default_font_size = 20
 default_xray.visuals.bounding_box_thickness = 7
+default_xray.dicom_type = DicomTypes.SINGLE
+default_xray.batch.input_types = [".dcm", ".jpg", ".png"]
 
 default_xray.register(name="default_xray", store=False, silent=True)
 

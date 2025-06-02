@@ -86,6 +86,11 @@ Examples can be found at https://github.com/radoss-org/retuve/tree/main/examples
 
 # Docs
 
+We have seperate documentation for different use cases. Please see them all here:
+- [Bringing your own DICOMs](docs/usecases/001-bringing-own-dicoms-xray.md)
+- [Using Retuve with DICOMs](docs/usecases/002-using-retuve-with-dicoms.md)
+- [All other guides](https://github.com/radoss-org/retuve/tree/main/docs/usercases)
+
 We provide high level overviews for different types of users. This includes a tailored description of Retuve, and some highlighted features:
 
 - [For Developers](docs/overviews/for_developers.md)
@@ -145,3 +150,7 @@ Please also see our [Milestones](https://github.com/radoss-org/retuve/milestones
 Data for the examples and tests is from [https://github.com/radoss-org/radoss-creative-commons](https://github.com/radoss-org/radoss-creative-commons).
 
 Please see this repo for attribution and licensing information.
+
+# Maintainers
+
+- [Adam McArthur](https://mcaq.me)

@@ -22,7 +22,6 @@ from typing import Any, Dict, List, Literal, Union
 
 from PIL import ImageFont
 from pyparsing import C
-
 from retuve.keyphrases.enums import (
     ACASplit,
     Colors,
@@ -61,6 +60,8 @@ class HipConfig:
         graf_selection_func_args: Dict[str, Any],
         display_graf_conf: bool,
         graf_algo_threshold: float,
+        graf_frame_selection: int,
+        allow_irregular_illiums: bool,
     ):
         """
         The Hip Subconfig.
@@ -85,6 +86,8 @@ class HipConfig:
         :param graf_selection_func_args (dict): The arguments to pass to the graf, if needed.
         :param display_graf_conf (bool): Display the graf confidence.
         :param graf_algo_threshold (float): The graf algorithm confidence threshold.
+        :param graf_frame_selection (int): The frame to select for the GRAF MANUAL FRAME algorithm.
+        :param allow_irregular_illiums (bool): Allow irregular illiums.
         """
         self.midline_color = midline_color
         self.aca_split = aca_split
@@ -106,6 +109,8 @@ class HipConfig:
         self.graf_selection_func_args = graf_selection_func_args
         self.display_graf_conf = display_graf_conf
         self.graf_algo_threshold = graf_algo_threshold
+        self.graf_frame_selection = graf_frame_selection
+        self.allow_irregular_illiums = allow_irregular_illiums
 
 
 class TrakConfig:

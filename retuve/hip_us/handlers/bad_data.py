@@ -19,7 +19,6 @@ Handles bad Hip Data Objects by removing outliers and empty frames.
 from typing import List
 
 import numpy as np
-
 from retuve.hip_us.classes.general import HipDatasUS, HipDataUS
 from retuve.hip_us.metrics.alpha import bad_alpha
 from retuve.hip_us.metrics.coverage import bad_coverage
@@ -153,7 +152,7 @@ def handle_bad_frames(hip_datas: HipDatasUS, config: Config) -> HipDatasUS:
             bad_frame_reasons[i] = "Alpha Angle Non-Sensical"
             continue
 
-        if not left_apex_line_flat(hip):
+        if not left_apex_line_flat(hip) and not config.hip.allow_irregular_illiums:
             hip_datas[i] = empty_hip
             bad_frame_reasons[i] = "Ilium Line not Flat"
             continue
