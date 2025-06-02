@@ -86,7 +86,7 @@ Examples can be found at https://github.com/radoss-org/retuve/tree/main/examples
 
 # Docs
 
-We have seperate documentation for different use cases. Please see them all here:
+We have separate documentation for different use cases. Please see them all here:
 - [Bringing your own DICOMs](docs/usecases/001-bringing-own-dicoms-xray.md)
 - [Using Retuve with DICOMs](docs/usecases/002-using-retuve-with-dicoms.md)
 - [All other guides](https://github.com/radoss-org/retuve/tree/main/docs/usercases)
