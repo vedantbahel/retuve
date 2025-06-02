@@ -51,6 +51,7 @@ from radstract.data.dicom import convert_dicom_to_images
 from retuve.defaults.hip_configs import default_US
 from retuve.defaults.manual_seg import manual_predict_us
 from retuve.testdata import Cases, download_case
+from retuve.funcs import analyse_hip_2DUS
 
 # Example usage
 dcm_file, seg_file = download_case(Cases.ULTRASOUND_DICOM)
