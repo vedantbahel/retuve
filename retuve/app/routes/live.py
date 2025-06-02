@@ -117,12 +117,16 @@ async def constantly_delete_temp_dirs(config):
 async def lifespan(app):
     # Create the task once the event loop is running
     task = asyncio.create_task(process_dicom_queue())
-    task2 = asyncio.create_task(constantly_delete_temp_dirs(Config.live_config.name))
+    if Config.live_config:
+        task2 = asyncio.create_task(
+            constantly_delete_temp_dirs(Config.live_config.name)
+        )
 
     yield
 
     task.cancel()
-    task2.cancel()
+    if Config.live_config:
+        task2.cancel()
 
 
 router = APIRouter(lifespan=lifespan)

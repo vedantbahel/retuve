@@ -136,7 +136,8 @@ def run_all_state_machines():
     configs = [config for _, config in Config.get_configs()]
 
     # set type to spawn
-    multiprocessing.set_start_method("spawn")
+    if not multiprocessing.get_start_method(allow_none=True):
+        multiprocessing.set_start_method("spawn")
 
     # run each state machine in a separate process
     processes = [

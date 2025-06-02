@@ -23,7 +23,6 @@ from typing import List
 import cv2
 import numpy as np
 from filelock import FileLock
-
 from retuve.classes.seg import SegFrameObjects
 from retuve.hip_us.classes.enums import HipLabelsUS
 from retuve.hip_us.classes.general import HipDatasUS
@@ -132,6 +131,7 @@ def graf_frame_algo(
     first_illium_frame,
     last_illium_frame,
     file_id=None,
+    config: Config = None,
 ):
     """
     Get the Graf Frame for the hip US module as a weighted
@@ -203,6 +203,10 @@ def graf_frame_algo(
         * femoral_head_roundness_normalisation
     )
 
+    if config.hip.allow_irregular_illiums:
+        line_flatness_value = 0
+        line_flatness_weight = 0
+
     # Calculate the weighted score based on alpha and angle flatness
     final_score = round(
         (
@@ -272,7 +276,29 @@ def find_graf_plane(
     :return: The hip data with the Graf Plane.
     """
 
-    hip_datas.graf_confs = []
+    if config.hip.graf_selection_method == GrafSelectionMethod.MANUAL_FRAME:
+        if config.hip.graf_frame_selection is None:
+            raise ValueError(
+                "Graf Frame Selection is None. "
+                "Please set config.hip.graf_frame_selection to a valid frame number."
+            )
+
+        graf_frame = config.hip.graf_frame_selection
+
+        hip_datas.graf_frame = graf_frame
+
+        hip_datas.grafs_hip = [hip for hip in hip_datas if hip.frame_no == graf_frame][
+            0
+        ]
+
+        # build the graf confs
+        # 0 for each frame except the graf frame
+        hip_datas.graf_confs = [
+            0 if hip_data.frame_no != graf_frame else 1
+            for hip_data in hip_datas.hip_datas
+        ]
+
+        return hip_datas
 
     if config.hip.graf_selection_method == GrafSelectionMethod.MANUAL_FEATURES:
         return find_graf_plane_manual_features(hip_datas, results, config)
@@ -339,6 +365,7 @@ def find_graf_plane_manual_features(
                 all_illiums[0].frame_no,
                 all_illiums[-1].frame_no,
                 None,
+                config,
             )
             / GRAF_THRESHOLD
             for hip_data, seg_frame_objs in zip(hip_datas, results)
@@ -364,6 +391,7 @@ def find_graf_plane_manual_features(
             first_illium_frame,
             last_illium_frame,
             hip_datas.file_id,
+            config,
         ),
     )
 
