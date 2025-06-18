@@ -24,7 +24,10 @@ import pydicom
 from moviepy.video.io.ImageSequenceClip import ImageSequenceClip
 from PIL import Image
 from plotly.graph_objs import Figure
-from radstract.data.dicom import convert_dicom_to_images
+from radstract.data.dicom import (
+    convert_dicom_to_images,
+    convert_images_to_dicom,
+)
 from radstract.data.nifti import NIFTI, convert_images_to_nifti_labels
 
 from retuve.classes.draw import Overlay
@@ -38,7 +41,10 @@ from retuve.hip_us.handlers.side import reverse_3dus_orientaition
 from retuve.hip_us.metrics.dev import get_dev_metrics
 from retuve.hip_us.modes.landmarks import landmarks_2_metrics_us
 from retuve.hip_us.modes.seg import pre_process_segs_us, segs_2_landmarks_us
-from retuve.hip_us.multiframe import find_graf_plane, get_3d_metrics_and_visuals
+from retuve.hip_us.multiframe import (
+    find_graf_plane,
+    get_3d_metrics_and_visuals,
+)
 from retuve.hip_xray.classes import DevMetricsXRay, HipDataXray, LandmarksXRay
 from retuve.hip_xray.draw import draw_hips_xray
 from retuve.hip_xray.landmarks import landmarks_2_metrics_xray
@@ -109,7 +115,9 @@ def process_segs_us(
     :return: The hip datas, the results, and the shape.
     """
 
-    results: List[SegFrameObjects] = modes_func(file, config, **modes_func_kwargs_dict)
+    results: List[SegFrameObjects] = modes_func(
+        file, config, **modes_func_kwargs_dict
+    )
     results, shape = pre_process_segs_us(results, config)
     pre_edited_results = copy.deepcopy(results)
     landmarks, all_seg_rejection_reasons = segs_2_landmarks_us(results, config)
@@ -154,7 +162,9 @@ def analyse_hip_xray_2D(
     elif isinstance(img, Image.Image):
         data = [img]
     else:
-        raise ValueError(f"Invalid image type: {type(img)}. Expected Image or DICOM.")
+        raise ValueError(
+            f"Invalid image type: {type(img)}. Expected Image or DICOM."
+        )
 
     if config.operation_type in OperationType.LANDMARK:
         landmark_results, seg_results = modes_func(
@@ -231,7 +241,7 @@ def analyze_synthetic_xray(
 
 
 def analyse_hip_3DUS(
-    dcm: pydicom.FileDataset,
+    image: Union[pydicom.FileDataset, List[Image.Image]],
     keyphrase: Union[str, Config],
     modes_func: Callable[
         [pydicom.FileDataset, str, Dict[str, Any]],
@@ -263,10 +273,16 @@ def analyse_hip_3DUS(
     if file_id:
         del modes_func_kwargs_dict["file_id"]
 
+    # if a set of images, convert to a DICOM file
+    if isinstance(image, list) and all(
+        isinstance(img, Image.Image) for img in image
+    ):
+        image = convert_images_to_dicom(image)
+
     try:
         if config.operation_type == OperationType.SEG:
             hip_datas, results, shape = process_segs_us(
-                config, dcm, modes_func, modes_func_kwargs_dict
+                config, image, modes_func, modes_func_kwargs_dict
             )
         elif config.operation_type == OperationType.LANDMARK:
             raise NotImplementedError(
@@ -279,8 +295,7 @@ def analyse_hip_3DUS(
     hip_datas = handle_bad_frames(hip_datas, config)
 
     if not any(hip.metrics for hip in hip_datas):
-        dcm_patient = dcm.get("PatientID", "Unknown")
-        ulogger.error(f"No metrics were found in the DICOM {dcm_patient}.")
+        ulogger.error(f"No metrics were found in image.")
 
     hip_datas.file_id = file_id
     hip_datas = find_graf_plane(hip_datas, results, config=config)
@@ -341,7 +356,7 @@ def analyse_hip_3DUS(
 
 
 def analyse_hip_2DUS(
-    img: Image.Image,
+    img: Union[Image.Image, pydicom.FileDataset],
     keyphrase: Union[str, Config],
     modes_func: Callable[
         [Image.Image, str, Dict[str, Any]],
@@ -362,10 +377,15 @@ def analyse_hip_2DUS(
     """
     config = Config.get_config(keyphrase)
 
+    if isinstance(img, pydicom.FileDataset):
+        data = img
+    elif isinstance(img, Image.Image):
+        data = [img]
+
     try:
         if config.operation_type in OperationType.SEG:
             hip_datas, results, _ = process_segs_us(
-                config, [img], modes_func, modes_func_kwargs_dict
+                config, data, modes_func, modes_func_kwargs_dict
             )
     except Exception as e:
         ulogger.error(f"Critical Error: {e}")
@@ -387,7 +407,7 @@ def analyse_hip_2DUS(
 
 
 def analyse_hip_2DUS_sweep(
-    dcm: pydicom.FileDataset,
+    image: Union[pydicom.FileDataset, List[Image.Image]],
     keyphrase: Union[str, Config],
     modes_func: Callable[
         [pydicom.FileDataset, str, Dict[str, Any]],
@@ -414,10 +434,16 @@ def analyse_hip_2DUS_sweep(
     config = Config.get_config(keyphrase)
     hip_datas = HipDatasUS()
 
+    # if a set of images, convert to a DICOM file
+    if isinstance(image, list) and all(
+        isinstance(img, Image.Image) for img in image
+    ):
+        image = convert_images_to_dicom(image)
+
     try:
         if config.operation_type == OperationType.SEG:
             hip_datas, results, shape = process_segs_us(
-                config, dcm, modes_func, modes_func_kwargs_dict
+                config, image, modes_func, modes_func_kwargs_dict
             )
         elif config.operation_type == OperationType.LANDMARK:
             raise NotImplementedError(
@@ -509,10 +535,13 @@ def retuve_run(
     :return: The Retuve result standardised output.
     """
     always_dcm = (
-        len(config.batch.input_types) == 1 and ".dcm" in config.batch.input_types
+        len(config.batch.input_types) == 1
+        and ".dcm" in config.batch.input_types
     )
 
-    if always_dcm or (file.endswith(".dcm") and ".dcm" in config.batch.input_types):
+    if always_dcm or (
+        file.endswith(".dcm") and ".dcm" in config.batch.input_types
+    ):
         file = pydicom.dcmread(file)
 
     if hip_mode == HipMode.XRAY:
@@ -521,7 +550,9 @@ def retuve_run(
         hip, image, dev_metrics = analyse_hip_xray_2D(
             file, config, modes_func, modes_func_kwargs_dict
         )
-        return RetuveResult(hip.json_dump(config, dev_metrics), image=image, hip=hip)
+        return RetuveResult(
+            hip.json_dump(config, dev_metrics), image=image, hip=hip
+        )
     elif hip_mode == HipMode.US3D:
         hip_datas, video_clip, visual_3d, dev_metrics = analyse_hip_3DUS(
             file, config, modes_func, modes_func_kwargs_dict
@@ -537,7 +568,9 @@ def retuve_run(
         hip, image, dev_metrics = analyse_hip_2DUS(
             file, config, modes_func, modes_func_kwargs_dict
         )
-        return RetuveResult(hip.json_dump(config, dev_metrics), hip=hip, image=image)
+        return RetuveResult(
+            hip.json_dump(config, dev_metrics), hip=hip, image=image
+        )
     elif hip_mode == HipMode.US2DSW:
         hip, image, dev_metrics, video_clip = analyse_hip_2DUS_sweep(
             file, config, modes_func, modes_func_kwargs_dict

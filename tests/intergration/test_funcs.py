@@ -16,7 +16,10 @@ import os
 
 import pydicom
 from PIL import Image
-from radstract.data.dicom import convert_dicom_to_images
+from radstract.data.dicom import (
+    convert_dicom_to_images,
+    convert_images_to_dicom,
+)
 
 from retuve.defaults.hip_configs import default_xray, test_default_US
 from retuve.defaults.manual_seg import (
@@ -135,4 +138,42 @@ def test_analyse_hip_2DUS_sweep(us_file_path, metrics_2d_sweep):
 
     metrics = hip_data.json_dump(test_default_US, dev_metrics)
 
+    assert metrics == metrics_2d_sweep
+
+
+def test_analyse_hip_3DUS_plain_images(us_file_path, metrics_3d_us):
+    """Test 3DUS analysis with a list of PIL Images."""
+    seg_file = us_file_path.replace(".dcm", ".nii.gz")
+    dcm = pydicom.dcmread(us_file_path)
+    images = convert_dicom_to_images(dcm)
+
+    hip_datas, *_ = analyse_hip_3DUS(
+        images,
+        keyphrase=test_default_US,
+        modes_func=manual_predict_us_dcm,
+        modes_func_kwargs_dict={"seg": seg_file},
+    )
+
+    metrics = hip_datas.json_dump(test_default_US)
+    del metrics["recorded_error"]
+    if "recorded_error" in metrics_3d_us:
+        del metrics_3d_us["recorded_error"]
+
+    assert metrics == metrics_3d_us
+
+
+def test_analyse_hip_2DUS_sweep_plain_images(us_file_path, metrics_2d_sweep):
+    """Test 2D sweep analysis with a list of PIL Images."""
+    seg_file = us_file_path.replace(".dcm", ".nii.gz")
+    dcm = pydicom.dcmread(us_file_path)
+    images = convert_dicom_to_images(dcm)
+
+    hip_data, _, dev_metrics, _ = analyse_hip_2DUS_sweep(
+        images,
+        keyphrase=test_default_US,
+        modes_func=manual_predict_us_dcm,
+        modes_func_kwargs_dict={"seg": seg_file},
+    )
+
+    metrics = hip_data.json_dump(test_default_US, dev_metrics)
     assert metrics == metrics_2d_sweep
