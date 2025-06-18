@@ -207,7 +207,7 @@ with gzip.open(f"{test_data_dir}/seg_results_xray.pkl.gz", "wb") as f:
 # Get jsons for 2DSW and 2D
 
 hip_datas, img, dev_metrics, _ = analyse_hip_2DUS_sweep(
-    dcm=dcm,
+    dcm,
     keyphrase=test_default_US,
     modes_func=manual_predict_us_dcm,
     modes_func_kwargs_dict={"seg": seg_file},
