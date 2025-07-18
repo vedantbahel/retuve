@@ -152,9 +152,7 @@ def rotate_in_place(p1, p2, angle_deg=45):
     """
     v = np.array(p2) - np.array(p1)
     theta = np.deg2rad(angle_deg)
-    rot = np.array(
-        [[np.cos(theta), -np.sin(theta)], [np.sin(theta), np.cos(theta)]]
-    )
+    rot = np.array([[np.cos(theta), -np.sin(theta)], [np.sin(theta), np.cos(theta)]])
     p2_rot = np.array(p1) + rot @ v
     return p1, p2_rot
 
@@ -234,9 +232,7 @@ def point_left_right(p1: tuple, p2: tuple, p3: tuple) -> float:
 _warned_functions = set()
 
 
-def warning_decorator(
-    alpha=False, beta=False, validated=False, paper_url=None
-):
+def warning_decorator(alpha=False, beta=False, validated=False, paper_url=None):
     """
     Decorator to print warning messages when decorated functions are run, based on specified flags.
     Each warning is only printed once per function per program run.

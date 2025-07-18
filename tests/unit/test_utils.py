@@ -125,9 +125,7 @@ def test_find_midline_extremes():
     assert left_most is not None, "Left most should not be None"
     assert right_most is not None, "Right most should not be None"
     assert left_most[1] == 1, f"Left most should have y=1, got {left_most[1]}"
-    assert (
-        right_most[1] == 10
-    ), f"Right most should have y=10, got {right_most[1]}"
+    assert right_most[1] == 10, f"Right most should have y=10, got {right_most[1]}"
 
     # Test with empty midline
     empty_midline = np.array([])
@@ -227,9 +225,7 @@ def test_rotate_in_place():
     rotated_p1, rotated_p2 = rotate_in_place(p1, p2, angle_deg)
 
     assert rotated_p1 == p1, "Center point should not change"
-    assert isinstance(
-        rotated_p2, np.ndarray
-    ), "Rotated point should be numpy array"
+    assert isinstance(rotated_p2, np.ndarray), "Rotated point should be numpy array"
 
     # Check that rotated point is at (0, 1) approximately
     assert abs(rotated_p2[0] - 0) < 0.001, f"Expected x=0, got {rotated_p2[0]}"
@@ -243,9 +239,7 @@ def test_rotate_in_place():
     rotated_p1, rotated_p2 = rotate_in_place(p1, p2, angle_deg)
 
     # Check that rotated point is at (-1, 0) approximately
-    assert (
-        abs(rotated_p2[0] - (-1)) < 0.001
-    ), f"Expected x=-1, got {rotated_p2[0]}"
+    assert abs(rotated_p2[0] - (-1)) < 0.001, f"Expected x=-1, got {rotated_p2[0]}"
     assert abs(rotated_p2[1] - 0) < 0.001, f"Expected y=0, got {rotated_p2[1]}"
 
     # Test 45-degree rotation
@@ -371,6 +365,4 @@ def test_rotate_in_place_edge_cases():
     rotated_p1, rotated_p2 = rotate_in_place(p1, p2, angle_deg)
     # Should be equivalent to 270-degree rotation
     assert abs(rotated_p2[0] - 0) < 0.001, f"Expected x=0, got {rotated_p2[0]}"
-    assert (
-        abs(rotated_p2[1] - (-1)) < 0.001
-    ), f"Expected y=-1, got {rotated_p2[1]}"
+    assert abs(rotated_p2[1] - (-1)) < 0.001, f"Expected y=-1, got {rotated_p2[1]}"

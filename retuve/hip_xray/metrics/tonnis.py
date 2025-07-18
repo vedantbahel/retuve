@@ -115,9 +115,7 @@ def _draw_tonnis_side(overlay, pel_o, h_line_p1, h_line_p2, grade_text):
     h_line_vec = (h_line_p2[0] - h_line_p1[0], h_line_p2[1] - h_line_p1[1])
     sma_line_p2 = (pel_o[0] + h_line_vec[0], pel_o[1] + h_line_vec[1])
 
-    sma_line_to_draw = extend_line(
-        pel_o, sma_line_p2, scale=1.3, direction="both"
-    )
+    sma_line_to_draw = extend_line(pel_o, sma_line_p2, scale=1.3, direction="both")
 
     overlay.draw_lines([sma_line_to_draw])
     overlay.draw_text(grade_text, pel_o[0] - 100, pel_o[1] - 150)

@@ -27,18 +27,10 @@ def test_find_tonnis(landmarks_xray_0, expected_xray_metrics):
     """Test the find_tonnis function with valid landmarks."""
     tonnis_left, tonnis_right = find_tonnis(landmarks_xray_0)
 
-    assert isinstance(
-        tonnis_left, int
-    ), "Tonnis grade left should be an integer."
-    assert isinstance(
-        tonnis_right, int
-    ), "Tonnis grade right should be an integer."
-    assert (
-        0 <= tonnis_left <= 4
-    ), "Tonnis grade left should be between 0 and 4."
-    assert (
-        0 <= tonnis_right <= 4
-    ), "Tonnis grade right should be between 0 and 4."
+    assert isinstance(tonnis_left, int), "Tonnis grade left should be an integer."
+    assert isinstance(tonnis_right, int), "Tonnis grade right should be an integer."
+    assert 0 <= tonnis_left <= 4, "Tonnis grade left should be between 0 and 4."
+    assert 0 <= tonnis_right <= 4, "Tonnis grade right should be between 0 and 4."
 
     # Check against expected values from the test data
     assert tonnis_left == expected_xray_metrics["tonnis_grade_left"]
@@ -70,12 +62,8 @@ def test_find_tonnis_missing_femoral_points():
     landmarks.fem_r = None
 
     tonnis_left, tonnis_right = find_tonnis(landmarks)
-    assert (
-        tonnis_left == 0
-    ), "Should return 0 when left femoral point is missing"
-    assert (
-        tonnis_right == 0
-    ), "Should return 0 when right femoral point is missing"
+    assert tonnis_left == 0, "Should return 0 when left femoral point is missing"
+    assert tonnis_right == 0, "Should return 0 when right femoral point is missing"
 
 
 def test_calculate_tonnis_grade_grade_1(ihdi_points_left):

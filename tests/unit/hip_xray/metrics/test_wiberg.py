@@ -200,9 +200,7 @@ def test_draw_wiberg_missing_h_points(img_shape_xray, config_xray):
     assert isinstance(result, Overlay)
 
 
-def test_draw_wiberg_left_side_only(
-    hip_data_xray_0, img_shape_xray, config_xray
-):
+def test_draw_wiberg_left_side_only(hip_data_xray_0, img_shape_xray, config_xray):
     """Test draw_wiberg when only left h_point is available."""
     hip_data_xray_0.landmarks.h_point_l = (120, 150)
 
@@ -212,9 +210,7 @@ def test_draw_wiberg_left_side_only(
     assert isinstance(result, Overlay)
 
 
-def test_draw_wiberg_right_side_only(
-    hip_data_xray_0, img_shape_xray, config_xray
-):
+def test_draw_wiberg_right_side_only(hip_data_xray_0, img_shape_xray, config_xray):
     """Test draw_wiberg when only right h_point is available."""
     hip_data_xray_0.landmarks.h_point_r = (280, 150)
 

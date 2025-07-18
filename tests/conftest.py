@@ -146,23 +146,18 @@ def femoral_sphere() -> SegObject:
 @pytest.fixture
 def landmarks_us() -> List[LandmarksUS]:
     return [
-        copy.deepcopy(data_hip_datas[i].landmarks)
-        for i in range(len(data_hip_datas))
+        copy.deepcopy(data_hip_datas[i].landmarks) for i in range(len(data_hip_datas))
     ]
 
 
 @pytest.fixture
 def hip_data_us_0(expected_us_metrics) -> HipDatasUS:
-    return copy.deepcopy(
-        data_hip_datas[expected_us_metrics["frame_with_results"]]
-    )
+    return copy.deepcopy(data_hip_datas[expected_us_metrics["frame_with_results"]])
 
 
 @pytest.fixture
 def results_us_0(expected_us_metrics) -> SegFrameObjects:
-    return copy.deepcopy(
-        data_results[expected_us_metrics["frame_with_results"]]
-    )
+    return copy.deepcopy(data_results[expected_us_metrics["frame_with_results"]])
 
 
 @pytest.fixture

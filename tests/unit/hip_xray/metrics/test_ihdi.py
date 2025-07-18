@@ -32,9 +32,7 @@ def test_find_ihdi(landmarks_xray_0, expected_xray_metrics):
     ihdi_left, ihdi_right = find_ihdi(landmarks_xray_0)
 
     assert isinstance(ihdi_left, int), "IHDI grade left should be an integer."
-    assert isinstance(
-        ihdi_right, int
-    ), "IHDI grade right should be an integer."
+    assert isinstance(ihdi_right, int), "IHDI grade right should be an integer."
     assert 0 <= ihdi_left <= 4, "IHDI grade left should be between 0 and 4."
     assert 0 <= ihdi_right <= 4, "IHDI grade right should be between 0 and 4."
 
