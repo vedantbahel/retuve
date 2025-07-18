@@ -1,3 +1,18 @@
+# Copyright 2024 Adam McArthur
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
 import os
 import subprocess
 
@@ -23,9 +38,7 @@ to_download = [
 
 for owner, repo, branch, directory, output_dir in to_download:
 
-    api_url = (
-        f"https://api.github.com/repos/{owner}/{repo}/contents/{directory}?ref={branch}"
-    )
+    api_url = f"https://api.github.com/repos/{owner}/{repo}/contents/{directory}?ref={branch}"
 
     normal_url = f"https://github.com/{owner}/{repo}"
 
@@ -63,7 +76,9 @@ for owner, repo, branch, directory, output_dir in to_download:
         print("You did not agree to the terms. Exiting...")
         exit()
 
-    print("Thank you for agreeing to the terms. Proceeding with the test generation...")
+    print(
+        "Thank you for agreeing to the terms. Proceeding with the test generation..."
+    )
 
     # Create the output directory if it doesn't exist
     if not os.path.exists(output_dir):
@@ -77,7 +92,9 @@ for owner, repo, branch, directory, output_dir in to_download:
                 f.write(response.content)
             print(f"Downloaded: {output_path}")
         else:
-            print(f"Failed to download {file_url}. Status code: {response.status_code}")
+            print(
+                f"Failed to download {file_url}. Status code: {response.status_code}"
+            )
 
     # Fetch the list of files in the directory
     print(f"Fetching file list from {api_url}...")
@@ -94,10 +111,14 @@ for owner, repo, branch, directory, output_dir in to_download:
 
                 name = output_dir.split("/")[-1]
                 file_name = file_name.replace(".py", "")
-                output_path = os.path.join(output_dir, file_name + name + ".py")
+                output_path = os.path.join(
+                    output_dir, file_name + name + ".py"
+                )
                 download_file(file_url, output_path)
     else:
-        print(f"Failed to fetch file list. Status code: {response.status_code}")
+        print(
+            f"Failed to fetch file list. Status code: {response.status_code}"
+        )
         print(response.json())  # Print error details
 
     # Install the package using pip
