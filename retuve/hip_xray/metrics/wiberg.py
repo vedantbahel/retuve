@@ -70,13 +70,13 @@ def find_wiberg(landmarks: LandmarksXRay) -> tuple[float, float]:
             P_line_intercept_right,
         )
 
-        wilberg_line_right = (
+        wiberg_line_right = (
             landmarks.pel_r_o,
             landmarks.h_point_r,
         )
 
         wiberg_index_right = angle_between_lines(
-            P_line_right, wilberg_line_right
+            P_line_right, wiberg_line_right
         )
 
     wiberg_index_left = round(wiberg_index_left, 1)
