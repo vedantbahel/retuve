@@ -144,14 +144,14 @@ def draw_wiberg(hip: HipDataXray, overlay: Overlay, config: Config):
             scale=1.6,
             direction="both",
         )
-        new_wilberg_line_right = extend_line(
+        new_wiberg_line_right = extend_line(
             landmarks.pel_r_o, landmarks.h_point_r, scale=3, direction="down"
         )
 
         overlay.draw_lines(
             [
                 new_P_line_right,
-                new_wilberg_line_right,
+                new_wiberg_line_right,
             ]
         )
         overlay.draw_text(
