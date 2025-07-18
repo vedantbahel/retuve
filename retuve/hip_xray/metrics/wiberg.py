@@ -53,11 +53,11 @@ def find_wiberg(landmarks: LandmarksXRay) -> tuple[float, float]:
             P_line_intercept_left,
         )
 
-        wilberg_line_left = (
+        wiberg_line_left = (
             landmarks.pel_l_o,
             landmarks.h_point_l,
         )
-        wiberg_index_left = angle_between_lines(P_line_left, wilberg_line_left)
+        wiberg_index_left = angle_between_lines(P_line_left, wiberg_line_left)
 
     if landmarks.h_point_r is None:
         wiberg_index_right = 0
