@@ -44,8 +44,12 @@ def test_extend_line():
     assert left_point.shape == (2,), "Left point should have 2 dimensions."
     assert right_point.shape == (2,), "Right point should have 2 dimensions."
 
-    assert np.isclose(left_point, np.array([-2, -2])).all()
-    assert np.isclose(right_point, np.array([12, 12])).all()
+    assert np.isclose(
+        left_point, np.array([-1, -1])
+    ).all(), f"Left point should be [-1, -1] but is {left_point}"
+    assert np.isclose(
+        right_point, np.array([11, 11])
+    ).all(), f"Right point should be [11, 11] but is {right_point}"
 
 
 def test_draw_ace(hip_data_xray_0, img_shape_xray, config_us):

@@ -29,6 +29,12 @@ def expected_xray_metrics(metrics_xray):
     return {
         "ace_left": metrics["ace_index_left"],
         "ace_right": metrics["ace_index_right"],
+        "wiberg_left": metrics["wiberg_index_left"],
+        "wiberg_right": metrics["wiberg_index_right"],
+        "ihdi_left": metrics["ihdi_grade_left"],
+        "ihdi_right": metrics["ihdi_grade_right"],
+        "tonnis_grade_left": metrics["tonnis_grade_left"],
+        "tonnis_grade_right": metrics["tonnis_grade_right"],
     }
 
 

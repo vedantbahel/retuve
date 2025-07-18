@@ -88,6 +88,8 @@ class LandmarksXRay:
         pel_r_i: Tuple[float, float] = None,
         fem_l: Tuple[float, float] = None,
         fem_r: Tuple[float, float] = None,
+        h_point_l: Tuple[float, float] = None,
+        h_point_r: Tuple[float, float] = None,
     ):
         self.pel_l_o = pel_l_o
         self.pel_l_i = pel_l_i
@@ -96,6 +98,9 @@ class LandmarksXRay:
 
         self.fem_l = fem_l
         self.fem_r = fem_r
+
+        self.h_point_l = h_point_l
+        self.h_point_r = h_point_r
 
     def __str__(self) -> str:
         return (
@@ -113,6 +118,8 @@ class LandmarksXRay:
                 self.pel_r_i,
                 self.fem_l,
                 self.fem_r,
+                self.h_point_l,
+                self.h_point_r,
             ]
         )
 
@@ -124,6 +131,8 @@ class LandmarksXRay:
             "pel_r_i": self.pel_r_i,
             "fem_l": self.fem_l,
             "fem_r": self.fem_r,
+            "h_point_l": self.h_point_l,
+            "h_point_r": self.h_point_r,
         }.items()
 
     def __setitem__(self, key: str, value: Tuple[int, int]):

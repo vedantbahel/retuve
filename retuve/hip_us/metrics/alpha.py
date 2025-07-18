@@ -132,7 +132,7 @@ def find_alpha_landmarks(
     return landmarks
 
 
-@warning_decorator(validated=True, paper_url="https://example.com/paper.pdf")
+@warning_decorator(alpha=True)
 def find_alpha_angle(points: LandmarksUS) -> float:
     """
     Calculate the Alpha Angle.

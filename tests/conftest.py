@@ -327,3 +327,23 @@ def metrics_2d_us():
 @pytest.fixture
 def metrics_2d_sweep():
     return current_output["us_sweep"]
+
+
+@pytest.fixture
+def ihdi_points_left():
+    return [
+        (3, 3),
+        (4, 6),
+        (8, 6),
+        ((4, 6), (0, 10)),
+    ]
+
+
+@pytest.fixture
+def ihdi_points_right():
+    return [
+        (9, 3),
+        (4, 6),
+        (8, 6),
+        ((8, 6), (12, 10)),
+    ]

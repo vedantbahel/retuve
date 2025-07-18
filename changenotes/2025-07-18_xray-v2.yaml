@@ -1,0 +1,91 @@
+description: |
+  Added Wiberg and Tonnis metrics to the xray output.
+  Added IHDI metrics to the xray output.
+current_output:
+  3dus:
+    metrics:
+    - Aca:
+      - 50.47
+      - 61.01
+      - 64.02
+      - 58.5
+    - Cen. ratio:
+      - N/A
+      - N/A
+      - N/A
+      - 0.64
+    - Alpha:
+      - 63.56
+      - 69.3
+      - 54.4
+      - 62.42
+    - Coverage:
+      - 0.62
+      - 0.708
+      - 0.57
+      - 0.63
+    - Curvature:
+      - 1.74
+      - 1.59
+      - 2.19
+      - 1.84
+    graf_frame: 4
+    dev_metrics:
+      os_ichium_detected: true
+      no_frames_segmented: 15
+      no_frames_marked: 10
+      graf_frame: 4
+      acetabular_mid_frame: 9
+      fem_mid_frame: 7
+      critial_error: false
+      cr_points:
+      - 1.0
+      - 12.0
+      - 5.0
+      total_frames: 15
+    recorded_error: null
+    keyphrase: default_US
+  xray:
+    metrics:
+    - ace_index_left: 28.1
+    - ace_index_right: 17.8
+    - wiberg_index_left: 0  # Added
+    - wiberg_index_right: 0  # Added
+    - ihdi_grade_left: 0  # Added
+    - ihdi_grade_right: 0  # Added
+    - tonnis_grade_left: 2  # Added
+    - tonnis_grade_right: 2  # Added
+    keyphrase: default_xray
+    dev_metrics: {}
+  us_sweep:
+    metrics:
+    - alpha: 69.3
+    - coverage: 0.708
+    - curvature: 1.59
+    keyphrase: default_US
+    dev_metrics:
+      os_ichium_detected: true
+      no_frames_segmented: 15
+      no_frames_marked: 10
+      graf_frame: 4
+      acetabular_mid_frame: 9
+      fem_mid_frame: 7
+      critial_error: false
+      cr_points: []
+      total_frames: 15
+  2dus:
+    metrics:
+    - alpha: 69.3
+    - coverage: 0.708
+    - curvature: 1.59
+    keyphrase: default_US
+    dev_metrics:
+      os_ichium_detected: true
+      no_frames_segmented: 1
+      no_frames_marked: 1
+      graf_frame: null
+      acetabular_mid_frame: 0
+      fem_mid_frame: 0
+      critial_error: false
+      cr_points: []
+      total_frames: 1

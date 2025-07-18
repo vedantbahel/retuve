@@ -26,6 +26,9 @@ from retuve.classes.seg import SegFrameObjects
 from retuve.draw import draw_landmarks, resize_data_for_display
 from retuve.hip_xray.classes import HipDataXray
 from retuve.hip_xray.metrics.ace import draw_ace
+from retuve.hip_xray.metrics.ihdi import draw_ihdi
+from retuve.hip_xray.metrics.tonnis import draw_tonnis
+from retuve.hip_xray.metrics.wiberg import draw_wiberg
 from retuve.keyphrases.config import Config
 from retuve.logs import log_timings
 
@@ -61,6 +64,9 @@ def draw_hips_xray(
         overlay = draw_landmarks(final_hip, overlay)
 
         overlay = draw_ace(final_hip, overlay, config)
+        overlay = draw_wiberg(final_hip, overlay, config)
+        overlay = draw_ihdi(final_hip, overlay, config)
+        overlay = draw_tonnis(final_hip, overlay, config)
 
         img = overlay.apply_to_image(final_image)
 
