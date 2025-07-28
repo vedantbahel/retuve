@@ -203,7 +203,10 @@ async def download_files(request: Request, keyphrase: str, pattern: str = None):
     # Find all folders in savedir that match the pattern
     # Copy each matching folder to the temporary directory
     for folder in os.listdir(savedir):
-        if re.search(pattern, folder) and os.path.isdir(os.path.join(savedir, folder)):
+        safe_pattern = re.escape(pattern)
+        if re.search(safe_pattern, folder) and os.path.isdir(
+            os.path.join(savedir, folder)
+        ):
             source_folder = os.path.join(savedir, folder)
             destination_folder = os.path.join(temp_dir, folder)
             shutil.copytree(source_folder, destination_folder)

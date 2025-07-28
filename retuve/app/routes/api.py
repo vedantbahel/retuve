@@ -54,8 +54,11 @@ async def store_feedback(
     file_id = feedback_request.file_id
     feedback = feedback_request.feedback
 
-    feedback_dir = f"{config.api.savedir}/{file_id}"
-    feedback_file = f"{feedback_dir}/feedback.json"
+    feedback_dir = os.path.join(config.api.savedir, file_id)
+    feedback_dir = os.path.normpath(feedback_dir)
+    if not feedback_dir.startswith(config.api.savedir):
+        raise Exception("Invalid file_id: Path traversal detected.")
+    feedback_file = os.path.join(feedback_dir, "feedback.json")
     os.makedirs(feedback_dir, exist_ok=True)
     try:
         if os.path.exists(feedback_file):
@@ -72,7 +75,10 @@ async def store_feedback(
         }
     except Exception as e:
         ulogger.info(e)
-        return {"status": "error", "message": str(e)}
+        return {
+            "status": "error",
+            "message": "An internal error has occurred.",
+        }
 
 
 @router.get("/api/get_feedback/{keyphrase}")
@@ -90,7 +96,11 @@ async def get_feedback(file_id: str, keyphrase: str, request: Request):
     validate_api_token(api_token)
 
     config = Config.get_config(keyphrase)
-    feedback_file = f"{config.api.savedir}/{file_id}/feedback.json"
+    feedback_dir = os.path.join(config.api.savedir, file_id)
+    feedback_dir = os.path.normpath(feedback_dir)
+    if not feedback_dir.startswith(config.api.savedir):
+        raise Exception("Invalid file_id: Path traversal detected.")
+    feedback_file = os.path.join(feedback_dir, "feedback.json")
     if os.path.exists(feedback_file):
         with open(feedback_file, "r") as file:
             feedback_list = json.load(file)
@@ -111,7 +121,10 @@ async def get_metrics(file_id: str, keyphrase: str, request: Request):
     validate_api_token(api_token)
 
     config = Config.get_config(keyphrase)
-    metrics_file = f"{config.api.savedir}/{file_id}/metrics.json"
+    base_dir = config.api.savedir
+    metrics_file = os.path.normpath(os.path.join(base_dir, file_id, "metrics.json"))
+    if not metrics_file.startswith(os.path.abspath(base_dir)):
+        return {"status": "error", "message": "Invalid file_id."}
     if os.path.exists(metrics_file):
         with open(metrics_file, "r") as file:
             metrics_list = json.load(file)
