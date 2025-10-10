@@ -114,7 +114,10 @@ class Overlay:
             return image
 
         image = Image.fromarray(image)
-        draw = ImageDraw.Draw(image, "RGBA")
+        # if grayscale or RGB, covert to RGBA
+        if image.mode != "RGBA":              
+            image = image.convert("RGBA")
+        draw = ImageDraw.Draw(image)
 
         # Execute all stored operations
         # go in order of segs, lines, points, text
